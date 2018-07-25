@@ -11,5 +11,8 @@
     "url": "blockparty-server.git"
   },
   "author": "Ron Forbes",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "firebase-admin": "^5.13.1"
+  }
 }
