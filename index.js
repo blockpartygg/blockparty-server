@@ -28,7 +28,7 @@ var clock = {
 var game = {
     clicks: [],
     scores: [],
-    scoring: true
+    penalty: false
 }
 
 var updateTimer;
@@ -42,24 +42,26 @@ var logClockState = () => {
 };
 
 var logGameState = () => {
-    console.log(`game: [ clicks: ${game.clicks}, scores: ${game.scores}, scoring: ${game.scoring} ]`);
+    console.log(`game: [ clicks: ${game.clicks}, scores: ${game.scores}, penalty: ${game.penalty} ]`);
 };
 
-var logGameScoringState = () => {
-    console.log(`game.scoring: ${game.scoring}`);
+var logGamePenaltyState = () => {
+    console.log(`game.penalty: ${game.penalty}`);
 }
 
 firebase.database().ref('game/clicks').on('child_added', snapshot => {
-    if(!game.scores[snapshot.val()]) {
-        game.scores[snapshot.val()] = 0;
+    if(clock.state === clockStates.game) {
+        if(!game.scores[snapshot.val()]) {
+            game.scores[snapshot.val()] = 0;
+        }
+        if(!game.penalty) {
+            game.scores[snapshot.val()] += 1000;
+        }
+        else {
+            game.scores[snapshot.val()] -= 3000;
+        }
+        firebase.database().ref('game/scores').child(snapshot.val()).set(game.scores[snapshot.val()]);
     }
-    if(scoring) {
-        game.scores[snapshot.val()] += 1000;
-    }
-    else {
-        game.scores[snapshot.val()] -= 3000;
-    }
-    firebase.database().ref('game/scores').child(snapshot.val()).set(scores[snapshot.val()]);
 });
 
 var setPregameState = () => {
@@ -69,7 +71,7 @@ var setPregameState = () => {
     clock.endTime = new Date(Date.now() + stateDurations.pregame);
     game.clicks = [];
     game.scores = [];
-    game.scoring = true;
+    game.penalty = false;
 
     // log state to the console
     logClockState();
@@ -77,7 +79,7 @@ var setPregameState = () => {
 
     // send state to the database
     firebase.database().ref('clock').update({ state: clock.state, startTime: clock.startTime, endTime: clock.endTime });
-    firebase.database().ref('game').update({ clicks: game.clicks, scores: game.scores, scoring: game.scoring });
+    firebase.database().ref('game').update({ clicks: game.clicks, scores: game.scores, penalty: game.penalty });
 
     // start the countdown to the game
     setTimeout(() => { setGameState(); }, stateDurations.pregame);
@@ -126,17 +128,17 @@ var setPostgameState = () => {
 };
 
 var updateGame = () => {
-    if(game.scoring && Date.now() - goTime >= 3000 && Math.random() >= 0.995) {
-        game.scoring = false;
-        logGameScoringState();
-        firebase.database().ref('game/scoring').set(game.scoring);
+    if(game.penalty && Date.now() - goTime >= 3000 && Math.random() >= 0.8) {
+        game.penalty = false;
+        logGamePenaltyState();
+        firebase.database().ref('game/penalty').set(game.penalty);
         stopTime = Date.now();
     }
     
-    if(!game.scoring && Date.now() - stopTime >= 3000 && Math.random() >= 0.99) {
-        game.scoring = true;
-        logGameScoringState();
-        firebase.database().ref('game/scoring').set(game.scoring);
+    if(!game.penalty && Date.now() - stopTime >= 3000 && Math.random() >= 0.8) {
+        game.penalty = true;
+        logGamePenaltyState();
+        firebase.database().ref('game/penalty').set(game.penalty);
         goTime = Date.now();
     }
 };
