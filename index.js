@@ -19,19 +19,34 @@ const gameStateDurations = {
     pregame: 5000,
     preminigame: 5000,
     minigame: 5000,
-    postminigame: 30000,
+    postminigame: 5000,
     postgame: 5000
 };
+
+var minigames = [
+    "fastestFinger"
+];
+
+var gameModes = [
+    "freeForAll",
+    "redVsBlue"
+];
+
+var currentGameMode = 0;
 
 var game = {
     state: gameStates.pregame,
     stateEndTime: null,
     round: 0,
+    minigame: "",
+    mode: "",
     leaderboard: [],
     scoreboard: [],
     clicks: [],
     penalty: false
 };
+
+var teams = [];
 
 var updateTimer;
 var stopTime = Date.now();
@@ -40,21 +55,40 @@ var goTime = Date.now();
 // logging helpers
 
 var logGameState = () => {
-    console.log('game: { state: ', game.state, ', stateEndTime: ', game.stateEndTime, ', round: ', game.round, ', leaderboard: ', game.leaderboard, ', scoreboard: ', game.scoreboard, ', clicks: ', game.clicks, ', penalty: ', game.penalty, ' }');
+    console.log('game: { state:', game.state, 
+        ', stateEndTime:', game.stateEndTime, 
+        ', round:', game.round, 
+        ', minigame:', game.minigame,
+        ', mode:', game.mode,
+        '}'
+    );
 };
 
 firebase.database().ref('game/clicks').on('child_added', snapshot => {
     if(game.state === gameStates.minigame) {
-        if(!game.scoreboard[snapshot.val()]) {
-            game.scoreboard[snapshot.val()] = 0;
-        }
-        if(!game.penalty) {
-            game.scoreboard[snapshot.val()] += 1000;
+        let playerId = snapshot.val();
+        let scoreId;
+        if(game.mode === 'redVsBlue') {
+            if(teams["redTeamId"].players.includes(playerId.toString())) {
+                scoreId = "redTeamId";
+            } else if(teams["blueTeamId"].players.includes(playerId.toString())) {
+                scoreId = "blueTeamId";
+            }
         }
         else {
-            game.scoreboard[snapshot.val()] -= 3000;
+            scoreId = playerId;
         }
-        firebase.database().ref('game/scoreboard').child(snapshot.val()).set(game.scoreboard[snapshot.val()]);
+        
+        if(!game.scoreboard[scoreId]) {
+            game.scoreboard[scoreId] = 0;
+        }
+        if(!game.penalty) {
+            game.scoreboard[scoreId] += 1000;
+        }
+        else {
+            game.scoreboard[scoreId] -= 3000;
+        }
+        firebase.database().ref('game/scoreboard').child(scoreId).set(game.scoreboard[scoreId]);
     }
 });
 
@@ -83,15 +117,43 @@ var setPreminigameState = () => {
     game.state = gameStates.preminigame;
     game.stateEndTime = new Date(Date.now() + gameStateDurations.preminigame);
     game.round++;
+    game.minigame = minigames[Math.floor(Math.random() * minigames.length)];
+    //game.mode = gameModes[Math.floor(Math.random() * gameModes.length)];
+    game.mode = gameModes[currentGameMode];
+    currentGameMode = (currentGameMode + 1) % gameModes.length;
     game.scoreboard = [];
     game.clicks = [];
     game.penalty = false;
+
+    if(game.mode === "redVsBlue") {
+        teams = [];
+        firebase.database().ref('game/teams').remove();
+        firebase.database().ref('players').once('value', snapshot => {
+            let isOnRedTeam = true;
+            teams["redTeamId"] = {
+                players: []
+            };
+            teams["blueTeamId"] = {
+                players: []
+            };
+            // todo: actually shuffle the list
+            snapshot.forEach(player => {
+                if(player.key === "redTeamId" || player.key === "blueTeamId") {
+                    return;
+                }
+                let team = isOnRedTeam ? "redTeamId" : "blueTeamId";
+                isOnRedTeam = !isOnRedTeam;
+                teams[team].players.push(player.key);
+            });
+            firebase.database().ref('game/teams').set(teams);
+        });
+    }
 
     // log state to the console
     logGameState();
 
     // send state to the database
-    firebase.database().ref('game').update({ state: game.state, stateEndTime: game.stateEndTime, round: game.round, scoreboard: game.scoreboard, clicks: game.clicks, penalty: game.penalty });
+    firebase.database().ref('game').update({ state: game.state, stateEndTime: game.stateEndTime, round: game.round, minigame: game.minigame, mode: game.mode, scoreboard: game.scoreboard, clicks: game.clicks, penalty: game.penalty });
 
     // start the countdown to the game
     setTimeout(() => { setMinigameState(); }, gameStateDurations.preminigame);
@@ -145,16 +207,41 @@ var setPostminigameState = () => {
     game.stateEndTime = new Date(Date.now() + gameStateDurations.postminigame);
 
     // update the leaderboard
-    firebase.database().ref('game/scoreboard').orderByValue().once('value', snapshot => {
-        var points = 1;
-        snapshot.forEach(score => {
-            if(!game.leaderboard[score.key]) {
-                game.leaderboard[score.key] = 0;
-            }
-            game.leaderboard[score.key] += points++;
+    if(game.mode === 'freeForAll') {
+        firebase.database().ref('game/scoreboard').orderByValue().once('value', snapshot => {
+            var points = 1;
+            snapshot.forEach(score => {
+                if(!game.leaderboard[score.key]) {
+                    game.leaderboard[score.key] = 0;
+                }
+                game.leaderboard[score.key] += points++;
+            });
+            firebase.database().ref('game/leaderboard').set(game.leaderboard);
         });
-        firebase.database().ref('game/leaderboard').set(game.leaderboard);
-    });
+    }
+    else if(game.mode === 'redVsBlue') {
+        firebase.database().ref('game/scoreboard').orderByValue().limitToLast(1).once('value', snapshot => {
+            let winningTeamId;
+            if(snapshot.val().redTeamId) {
+                winningTeamId = "redTeamId";
+            } else {
+                winningTeamId = "blueTeamId";
+            }
+            let playerCount = teams["redTeamId"].players.length + teams["blueTeamId"].players.length;
+            let totalPoints = playerCount * (playerCount + 1) / 2;
+            let pointsToSplit = Math.floor(totalPoints / teams[winningTeamId].players.length);
+            teams[winningTeamId].players.forEach(player => {
+                if(player === "redTeamId" || player === "blueTeamId") {
+                    return;
+                }
+                if(!game.leaderboard[player]) {
+                    game.leaderboard[player] = 0;
+                } 
+                game.leaderboard[player] += pointsToSplit;
+            });
+            firebase.database().ref('game/leaderboard').set(game.leaderboard);
+        });
+    }
 
     // log state to the console
     logGameState();
