@@ -1,12 +1,23 @@
 const firebase = require('firebase-admin');
-const firebaseServiceAccount = require('./firebaseServiceAccount.json');
+const firebaseServiceAccountDevelopment = require('./firebaseServiceAccountDevelopment.json');
+const firebaseServiceAccountProduction = require('./firebaseServiceAccountProduction.json');
 const Game = require('./Game');
 
 // initialize firebase
+let serviceAccount;
+let databaseURL;
+if(process.env.NODE_ENV === 'production') {
+  serviceAccount = firebaseServiceAccountProduction;
+  databaseURL = "https://blockparty-production.firebaseio.com";
+}
+else {
+  serviceAccount = firebaseServiceAccountDevelopment;
+  databaseURL = "https://blockparty-development.firebaseio.com"
+}
 firebase.initializeApp({
-    credential: firebase.credential.cert(firebaseServiceAccount),
-    databaseURL: "https://blockparty-production.firebaseio.com"
+    credential: firebase.credential.cert(serviceAccount),
+    databaseURL: databaseURL
 });
 
-var game = new Game();
+let game = new Game();
 game.setPregameState();
