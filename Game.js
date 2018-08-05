@@ -194,23 +194,23 @@ class Game {
 Game.states = {
   pregame: {
     name: "pregame",
-    duration: 5000
+    duration: 60000
   },
   lobby: {
     name: "lobby",
-    duration: 5000
+    duration: 60000
   },
   minigame: {
     name: "minigame",
-    duration: 30000
+    duration: 120000
   },
   results: {
     name: "results",
-    duration: 5000
+    duration: 60000
   },
   postgame: {
     name: "postgame",
-    duration: 5000
+    duration: 60000
   }
 };
 Game.minigames = {
