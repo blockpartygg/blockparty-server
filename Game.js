@@ -1,6 +1,7 @@
 const firebase = require('firebase-admin');
 const FastestFinger = require('./FastestFinger');
 const WhackABlock = require('./WhackABlock');
+const FlappyFlock = require('./FlappyFlock');
 const FreeForAll = require('./FreeForAll');
 const RedVsBlue = require('./RedVsBlue');
 
@@ -80,10 +81,10 @@ class Game {
     this.state = Game.states.lobby.name;
     this.endTime = new Date(Date.now() + Game.states.lobby.duration);
     this.round++;
-    this.minigame = Math.random() > 0.5 ? Game.minigames.fastestFinger : Game.minigames.whackABlock; 
-    this.mode = Math.random() > 0.5 ? Game.modes.freeForAll : Game.modes.redVsBlue;
+    this.minigame = Game.minigames.flappyFlock;
+    this.mode = Game.modes.freeForAll;
     
-    // set minigame.teams here
+    // set teams here
     if(this.mode === Game.modes.freeForAll) {
         this.currentMode = new FreeForAll();
     }
@@ -127,6 +128,9 @@ class Game {
     else if(this.minigame === Game.minigames.whackABlock) {
         this.currentMinigame = new WhackABlock(this.currentMode, this.scoreboard);
     }
+    else if(this.minigame === Game.minigames.flappyFlock) {
+      this.currentMinigame = new FlappyFlock(this.currentMode, this.scoreboard);
+    }
 
     // log state to the console
     this.logState();
@@ -141,7 +145,7 @@ class Game {
     firebase.database().ref('game/commands').on('child_added', snapshot => { this.currentMinigame.handleCommandAdded(snapshot); });
 
     // start the minigame update interval, updating 60 times per second (tweak this as needed)
-    this.minigameUpdateTimer = setInterval(() => { this.currentMinigame.update(); }, 1000 / 60);
+    this.minigameUpdateTimer = setInterval(() => { this.currentMinigame.update(1000/ 60); }, 1000 / 60);
 
     // start the countdown to the results state
     setTimeout(() => { this.setResultsState(); }, Game.states.minigame.duration);
@@ -194,28 +198,29 @@ class Game {
 Game.states = {
   pregame: {
     name: "pregame",
-    duration: 60000
+    duration: 1000
   },
   lobby: {
     name: "lobby",
-    duration: 60000
+    duration: 1000
   },
   minigame: {
     name: "minigame",
-    duration: 120000
+    duration: 600000
   },
   results: {
     name: "results",
-    duration: 60000
+    duration: 1000
   },
   postgame: {
     name: "postgame",
-    duration: 60000
+    duration: 1000
   }
 };
 Game.minigames = {
   fastestFinger: "fastestFinger",
   whackABlock: "whackABlock",
+  flappyFlock: "flappyFlock",
   blockParty: "blockParty",
   vectorArena: "vectorArena"
 };
