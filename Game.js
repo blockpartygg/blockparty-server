@@ -81,7 +81,7 @@ class Game {
     this.state = Game.states.lobby.name;
     this.endTime = new Date(Date.now() + Game.states.lobby.duration);
     this.round++;
-    this.minigame = Game.minigames.flappyFlock;
+    this.minigame = Game.minigames[Math.floor(Math.random() * 3)];
     this.mode = Game.modes.freeForAll;
     
     // set teams here
@@ -122,13 +122,13 @@ class Game {
     this.endTime = new Date(Date.now() + Game.states.minigame.duration);
     
     // set private game state
-    if(this.minigame === Game.minigames.fastestFinger) {
+    if(this.minigame === Game.minigames[0]) {
         this.currentMinigame = new FastestFinger(this.currentMode, this.scoreboard);
     }
-    else if(this.minigame === Game.minigames.whackABlock) {
+    else if(this.minigame === Game.minigames[1]) {
         this.currentMinigame = new WhackABlock(this.currentMode, this.scoreboard);
     }
-    else if(this.minigame === Game.minigames.flappyFlock) {
+    else if(this.minigame === Game.minigames[2]) {
       this.currentMinigame = new FlappyFlock(this.currentMode, this.scoreboard);
     }
 
@@ -198,32 +198,32 @@ class Game {
 Game.states = {
   pregame: {
     name: "pregame",
-    duration: 1000
+    duration: 30000
   },
   lobby: {
     name: "lobby",
-    duration: 1000
+    duration: 30000
   },
   minigame: {
     name: "minigame",
-    duration: 600000
+    duration: 120000
   },
   results: {
     name: "results",
-    duration: 1000
+    duration: 30000
   },
   postgame: {
     name: "postgame",
-    duration: 1000
+    duration: 30000
   }
 };
-Game.minigames = {
-  fastestFinger: "fastestFinger",
-  whackABlock: "whackABlock",
-  flappyFlock: "flappyFlock",
-  blockParty: "blockParty",
-  vectorArena: "vectorArena"
-};
+Game.minigames = [
+  "fastestFinger",
+  "whackABlock",
+  "flappyFlock",
+  "blockParty",
+  "vectorArena",
+];
 Game.modes = {
   freeForAll: "freeForAll",
   redVsBlue: "redVsBlue",
