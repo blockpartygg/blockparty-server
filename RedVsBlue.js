@@ -6,21 +6,37 @@ module.exports = class RedVsBlue {
   }
 
   setupTeams(teams) {
+    let players = [];
+    let isOnRedTeam = true;
     this.teams = [];
+    this.teams["redTeamId"] = [];
+    this.teams["blueTeamId"] = [];
     firebase.database().ref('game/teams').remove();
-    firebase.database().ref('players').once('value', snapshot => {
-      let isOnRedTeam = true;
-      this.teams["redTeamId"] = [];
-      this.teams["blueTeamId"] = [];
-      // todo: actually shuffle the list
+    firebase.database().ref('players').once('value', snapshot => {      
       snapshot.forEach(player => {
-          if(player.key === "redTeamId" || player.key === "blueTeamId") {
-              return;
-          }
-          let team = isOnRedTeam ? "redTeamId" : "blueTeamId";
-          isOnRedTeam = !isOnRedTeam;
-          this.teams[team].push(player.key);
+        if(!player.val().playing || player.key === "redTeamId" || player.key === "blueTeamId") {
+          return;
+        }
+        players.push(player.key);
       });
+
+      let index = 0;
+      let indexToSwap = 0;
+      let temp = null;
+
+      for(index = players.length - 1; index > 0; index--) {
+        indexToSwap = Math.floor(Math.random() * (index + 1));
+        temp = players[index];
+        players[index] = players[indexToSwap];
+        players[indexToSwap] = temp;
+      }
+
+      players.forEach(player => {
+        let team = isOnRedTeam ? "redTeamId" : "blueTeamId";
+        isOnRedTeam = !isOnRedTeam;
+        this.teams[team].push(player);
+      });
+      console.log(this.teams);
       firebase.database().ref('game/teams').set(this.teams);
     });
   }
@@ -52,13 +68,13 @@ module.exports = class RedVsBlue {
       let totalPoints = playerCount * (playerCount + 1) / 2;
       let pointsToSplit = Math.floor(totalPoints / this.teams[winningTeamId].length);
       this.teams[winningTeamId].forEach(player => {
-          if(player === "redTeamId" || player === "blueTeamId") {
-              return;
-          }
-          if(!leaderboard[player]) {
-              leaderboard[player] = 0;
-          } 
-          leaderboard[player] += pointsToSplit;
+        if(player === "redTeamId" || player === "blueTeamId") {
+            return;
+        }
+        if(!leaderboard[player]) {
+            leaderboard[player] = 0;
+        } 
+        leaderboard[player] += pointsToSplit;
       });
       firebase.database().ref('game/leaderboard').set(leaderboard);
     });

@@ -17,7 +17,10 @@ module.exports = class WhackABlock {
     let command = snapshot.val();
 
     this.blocks.forEach(block => {
-      if(command.x >= block.x && command.x <= block.x + block.width && command.y >= block.y && command.y <= block.y + block.height) {
+      if(command.x >= block.x - block.width / 2 && 
+        command.x <= block.x + block.width / 2 && 
+        command.y >= block.y - block.height / 2 && 
+        command.y <= block.y + block.height / 2) {
         this.blocks.splice(this.blocks.indexOf(block), 1);
         firebase.database().ref('whackABlock/blocks/' + block.id).remove();
         this.mode.updateScoreboard(this.scoreboard, command.playerId, block.value);
@@ -27,7 +30,7 @@ module.exports = class WhackABlock {
 
   update() {
     if(this.blocks.length < 10) {
-      let size = Math.random() * 10;
+      let size = Math.random() * 10 + 10;
       this.blocks.push({
         x: Math.random() * 100,
         y: Math.random() * 100,
