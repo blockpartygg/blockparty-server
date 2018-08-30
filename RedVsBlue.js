@@ -36,7 +36,6 @@ module.exports = class RedVsBlue {
         isOnRedTeam = !isOnRedTeam;
         this.teams[team].push(player);
       });
-      console.log(this.teams);
       firebase.database().ref('game/teams').set(this.teams);
     });
   }

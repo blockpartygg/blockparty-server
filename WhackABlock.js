@@ -40,7 +40,6 @@ module.exports = class WhackABlock {
       });
       let key = firebase.database().ref('whackABlock/blocks').push(this.blocks[this.blocks.length - 1]).key;
       this.blocks[this.blocks.length - 1].id = key;
-      this.logState();
     }
     this.updateBots();
   }

@@ -1,20 +1,13 @@
 const firebase = require('firebase-admin');
 
-module.exports = class FastestFinger {
+module.exports = class NomNom {
   constructor(mode, scoreboard) {
-    this.penalty = false;
-    this.goTime = Date.now();
-    this.stopTime = Date.now();
     this.mode = mode;
     this.scoreboard = scoreboard;
   }
 
   logState() {
-    console.log('fastestFinger: { penalty:', this.penalty,
-      ', goTime:', this.goTime,
-      ', stopTime:', this.stopTime,
-      '}'
-    );
+    console.log('nomNom: {}');
   }
 
   handleCommandAdded(snapshot) {

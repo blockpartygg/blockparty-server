@@ -86,7 +86,7 @@ class Game {
     this.startTime = new Date(Date.now());
     this.endTime = new Date(Date.now() + Game.states.lobby.duration);
     this.round++;
-    this.minigame = Game.minigames[Math.floor(Math.random() * 3)];
+    this.minigame = Game.minigames[Math.floor(Math.random() * 4)];
     this.mode = Game.modes[Math.floor(Math.random() * 2)];
     
     // set teams here
@@ -137,6 +137,9 @@ class Game {
     }
     else if(this.minigame === Game.minigames[2]) {
       this.currentMinigame = new FlappyFlock(this.currentMode, this.scoreboard);
+    }
+    else if(this.minigame === Game.minigames[3]) {
+      this.currentMinigame = new NomNom(this.currentMode, this.scoreboard);
     }
 
     // log state to the console
@@ -245,6 +248,10 @@ Game.minigames = [
   {
     name: "Flappy Flock",
     instructions: "tap to flap"
+  },
+  {
+    name: "Nom nom",
+    instructions: "You're a sphere. Eat smaller ones. Avoid bigger ones."
   },
   {
     name: "Block Party",
