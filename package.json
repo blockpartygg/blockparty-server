@@ -14,7 +14,9 @@
   "author": "Ron Forbes",
   "license": "ISC",
   "dependencies": {
+    "express": "^4.16.3",
     "firebase-admin": "^5.13.1",
-    "socket.io": "^2.1.1"
+    "socket.io": "^2.1.1",
+    "three": "^0.96.0"
   }
 }

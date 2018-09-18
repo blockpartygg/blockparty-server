@@ -2,6 +2,8 @@ const firebase = require('firebase-admin');
 const FastestFinger = require('./FastestFinger');
 const WhackABlock = require('./WhackABlock');
 const FlappyFlock = require('./FlappyFlock');
+const RedLightGreenLight = require('./RedLightGreenLight');
+const NomNom = require('./NomNom');
 const FreeForAll = require('./FreeForAll');
 const RedVsBlue = require('./RedVsBlue');
 
@@ -42,11 +44,100 @@ class Game {
     );
   }
 
-  setPregameState() {
+  sendSystemMessage(text) {
+    let timestamp = firebase.database.ServerValue.TIMESTAMP;
+    let user = {
+      name: "Block Party",
+      _id: "0",
+    }
+    firebase.database().ref('messages').push({ text, user, timestamp });
+  }
+
+  setPregameCountdownState() {
     // set state
-    this.state = Game.states.pregame.name;
+    this.state = Game.states.pregameCountdown.name;
     this.startTime = new Date(Date.now());
-    this.endTime = new Date(Date.now() + Game.states.pregame.duration);
+    this.endTime = new Date(Date.now() + Game.states.pregameCountdown.duration);
+    this.round = 0;
+    this.minigame = "";
+    this.mode = "";
+    this.teams = [];
+    this.scoreboard = [];
+    this.leaderboard = [];
+    this.commands = [];
+
+    this.currentMinigame = null;
+    this.currentMode = null;
+    this.minigameUpdateTimer = 0;
+    
+    // log state to the console
+    this.logState();
+
+    // send state to the database
+    firebase.database().ref('game').update({ 
+        state: this.state, 
+        startTime: this.startTime,
+        endTime: this.endTime, 
+        round: this.round, 
+        minigame: this.minigame, 
+        mode: this.mode, 
+        teams: this.teams,
+        scoreboard: this.scoreboard, 
+        leaderboard: this.leaderboard,
+        commands: this.commands,
+    });
+
+    this.sendSystemMessage("The next game is starting soon.");
+
+    // start the countdown to the lobby
+    setTimeout(() => { this.setPregameTitleState(); }, Game.states.pregameCountdown.duration);
+  }
+
+  setPregameTitleState() {
+    // set state
+    this.state = Game.states.pregameTitle.name;
+    this.startTime = new Date(Date.now());
+    this.endTime = new Date(Date.now() + Game.states.pregameTitle.duration);
+    this.round = 0;
+    this.minigame = "";
+    this.mode = "";
+    this.teams = [];
+    this.scoreboard = [];
+    this.leaderboard = [];
+    this.commands = [];
+
+    this.currentMinigame = null;
+    this.currentMode = null;
+    this.minigameUpdateTimer = 0;
+    
+    // log state to the console
+    this.logState();
+
+    // send state to the database
+    firebase.database().ref('game').update({ 
+        state: this.state, 
+        startTime: this.startTime,
+        endTime: this.endTime, 
+        round: this.round, 
+        minigame: this.minigame, 
+        mode: this.mode, 
+        teams: this.teams,
+        scoreboard: this.scoreboard, 
+        leaderboard: this.leaderboard,
+        commands: this.commands,
+    });
+
+    this.sendSystemMessage("It's party time!");
+
+    // start the countdown to the lobby
+    setTimeout(() => { this.setPregameIntroductionState(); }, Game.states.pregameTitle.duration);
+  }
+
+  setPregameIntroductionState() {
+    // set state
+    this.state = Game.states.pregameIntroduction.name;
+    this.startTime = new Date(Date.now());
+    this.endTime = new Date(Date.now() + Game.states.pregameIntroduction.duration);
     this.round = 0;
     this.minigame = "";
     this.mode = "";
@@ -77,17 +168,19 @@ class Game {
     });
 
     // start the countdown to the lobby
-    setTimeout(() => { this.setLobbyState(); }, Game.states.pregame.duration);
+    setTimeout(() => { this.setRoundIntroductionState(); }, Game.states.pregameIntroduction.duration);
   }
 
-  setLobbyState() {
+  setRoundIntroductionState() {
     // set state
-    this.state = Game.states.lobby.name;
+    this.state = Game.states.roundIntroduction.name;
     this.startTime = new Date(Date.now());
-    this.endTime = new Date(Date.now() + Game.states.lobby.duration);
+    this.endTime = new Date(Date.now() + Game.states.roundIntroduction.duration);
     this.round++;
-    this.minigame = Game.minigames[Math.floor(Math.random() * 4)];
-    this.mode = Game.modes[Math.floor(Math.random() * 2)];
+    //this.minigame = Game.minigames[Math.floor(Math.random() * 3)];
+    this.minigame = Math.random() > 0.5 ? Game.minigames[1] : Game.minigames[4];
+    // this.mode = Game.modes[Math.floor(Math.random() * 2)];
+    this.mode = Game.modes[0];
     
     // set teams here
     if(this.mode === Game.modes[0]) {
@@ -118,19 +211,63 @@ class Game {
         commands: this.commands,
     });
 
-    // start the countdown to the minigame state
-    setTimeout(() => { this.setMinigameState(); }, Game.states.lobby.duration);
+    this.sendSystemMessage("Round " + this.round + " is starting soon.");
+
+    // start the countdown to the lobby
+    setTimeout(() => { this.setRoundInstructionsState(); }, Game.states.roundIntroduction.duration);
   }
 
-  setMinigameState() {
+  setRoundInstructionsState() {
     // set state
-    this.state = Game.states.minigame.name;
+    this.state = Game.states.roundInstructions.name;
     this.startTime = new Date(Date.now());
-    this.endTime = new Date(Date.now() + Game.states.minigame.duration);
+    this.endTime = new Date(Date.now() + Game.states.roundInstructions.duration);
+    
+    // log state to the console
+    this.logState();
+
+    // send state to the database
+    firebase.database().ref('game').update({ 
+        state: this.state, 
+        startTime: this.startTime,
+        endTime: this.endTime, 
+    });
+
+    // start the countdown to the lobby
+    setTimeout(() => { this.setMinigameStartState(); }, Game.states.roundInstructions.duration);
+  }
+
+  setMinigameStartState() {
+    // set state
+    this.state = Game.states.minigameStart.name;
+    this.startTime = new Date(Date.now());
+    this.endTime = new Date(Date.now() + Game.states.minigameStart.duration);
+    
+    // log state to the console
+    this.logState();
+
+    // send state to the database
+    firebase.database().ref('game').update({ 
+        state: this.state, 
+        startTime: this.startTime,
+        endTime: this.endTime, 
+    });
+
+    firebase.database().ref('minigame').remove();
+
+    // start the countdown to the lobby
+    setTimeout(() => { this.setMinigamePlayState(); }, Game.states.minigameStart.duration);
+  }
+
+  setMinigamePlayState() {
+    // set state
+    this.state = Game.states.minigamePlay.name;
+    this.startTime = new Date(Date.now());
+    this.endTime = new Date(Date.now() + Game.states.minigamePlay.duration);
     
     // set private game state
     if(this.minigame === Game.minigames[0]) {
-        this.currentMinigame = new FastestFinger(this.currentMode, this.scoreboard);
+      this.currentMinigame = new FastestFinger(this.currentMode, this.scoreboard);
     }
     else if(this.minigame === Game.minigames[1]) {
         this.currentMinigame = new WhackABlock(this.currentMode, this.scoreboard);
@@ -140,6 +277,9 @@ class Game {
     }
     else if(this.minigame === Game.minigames[3]) {
       this.currentMinigame = new NomNom(this.currentMode, this.scoreboard);
+    }
+    else if(this.minigame === Game.minigames[4]) {
+      this.currentMinigame = new RedLightGreenLight(this.currentMode, this.scoreboard);
     }
 
     // log state to the console
@@ -158,16 +298,16 @@ class Game {
     // start the minigame update interval, updating 60 times per second (tweak this as needed)
     this.minigameUpdateTimer = setInterval(() => { this.currentMinigame.update(1000/ 60); }, 1000 / 60);
 
-    // start the countdown to the results state
-    setTimeout(() => { this.setResultsState(); }, Game.states.minigame.duration);
+    // start the countdown to the lobby
+    setTimeout(() => { this.setMinigameEndState(); }, Game.states.minigamePlay.duration);
   }
 
-  setResultsState() {
-    // set game state
-    this.state = Game.states.results.name;
+  setMinigameEndState() {
+    // set state
+    this.state = Game.states.minigameEnd.name;
     this.startTime = new Date(Date.now());
-    this.endTime = new Date(Date.now() + Game.states.results.duration);
-
+    this.endTime = new Date(Date.now() + Game.states.minigameEnd.duration);
+    
     // update the leaderboard
     this.currentMode.updateLeaderboard(this.leaderboard);
 
@@ -185,55 +325,167 @@ class Game {
 
     // stop the game update interval
     clearInterval(this.minigameUpdateTimer);
+    this.currentMinigame.shutdown();
 
-    if(this.round < 5) {
-        // start the countdown to the lobby
-        setTimeout(() => { this.setLobbyState(); }, Game.states.results.duration);
-    }
-    else {
-        // start the countdown to the postgame
-        setTimeout(() => { this.setPostgameState(); }, Game.states.results.duration);
-    }
+    // start the countdown to the lobby
+    setTimeout(() => { this.setRoundResultsScoreboardState(); }, Game.states.minigameEnd.duration);
   }
 
-  setPostgameState() {
-    // set game state
-    this.state = Game.states.postgame.name;
+  setRoundResultsScoreboardState() {
+    // set state
+    this.state = Game.states.roundResultsScoreboard.name;
     this.startTime = new Date(Date.now());
-    this.endTime = new Date(Date.now() + Game.states.postgame.duration);
-
+    this.endTime = new Date(Date.now() + Game.states.roundResultsScoreboard.duration);
+    
+    // log state to the console
     this.logState();
 
     // send state to the database
     firebase.database().ref('game').update({ 
-      state: this.state, 
-      startTime: this.startTime,
-      endTime: this.endTime });
+        state: this.state, 
+        startTime: this.startTime,
+        endTime: this.endTime, 
+    });
 
-    // start the countdown to the pregame
-    setTimeout(() => { this.setPregameState(); }, Game.states.postgame.duration)
+    this.sendSystemMessage("Round " + this.round + " has ended.");
+
+    if(this.round < 5) {
+      setTimeout(() => { this.setRoundResultsLeaderboardState(); }, Game.states.roundResultsScoreboard.duration);
+    }
+    else {
+      setTimeout(() => { this.setPostgameCelebrationState(); }, Game.states.roundResultsScoreboard.duration);
+    }
+  }
+
+  setRoundResultsLeaderboardState() {
+    // set state
+    this.state = Game.states.roundResultsLeaderboard.name;
+    this.startTime = new Date(Date.now());
+    this.endTime = new Date(Date.now() + Game.states.roundResultsLeaderboard.duration);
+    
+    // log state to the console
+    this.logState();
+
+    // send state to the database
+    firebase.database().ref('game').update({ 
+        state: this.state, 
+        startTime: this.startTime,
+        endTime: this.endTime, 
+    });
+
+    if(this.round < 5) {
+      // start the countdown to the lobby
+      setTimeout(() => { this.setRoundIntroductionState(); }, Game.states.roundResultsLeaderboard.duration);
+    }
+    else {
+      // start the countdown to the postgame
+      setTimeout(() => { this.setPostgameCelebrationState(); }, Game.states.postgameCelebration.duration);
+    }
+  }
+
+  setPostgameCelebrationState() {
+    // set state
+    this.state = Game.states.postgameCelebration.name;
+    this.startTime = new Date(Date.now());
+    this.endTime = new Date(Date.now() + Game.states.postgameCelebration.duration);
+    
+    // log state to the console
+    this.logState();
+
+    // send state to the database
+    firebase.database().ref('game').update({ 
+        state: this.state, 
+        startTime: this.startTime,
+        endTime: this.endTime, 
+    });
+
+    this.sendSystemMessage("The game has ended.");
+
+    // start the countdown to the lobby
+    setTimeout(() => { this.setPostgameRewardsState(); }, Game.states.postgameCelebration.duration);
+  }
+
+  setPostgameRewardsState() {
+    // set state
+    this.state = Game.states.postgameRewards.name;
+    this.startTime = new Date(Date.now());
+    this.endTime = new Date(Date.now() + Game.states.postgameRewards.duration);
+    
+    // log state to the console
+    this.logState();
+
+    // send state to the database
+    firebase.database().ref('game').update({ 
+        state: this.state, 
+        startTime: this.startTime,
+        endTime: this.endTime, 
+    });
+
+    // start the countdown to the lobby
+    setTimeout(() => { this.setPregameCountdownState(); }, Game.states.postgameRewards.duration);
   }
 }
+
 Game.states = {
-  pregame: {
-    name: "pregame",
-    duration: 10000
-  },
-  lobby: {
-    name: "lobby",
-    duration: 10000
-  },
-  minigame: {
-    name: "minigame",
-    duration: 30000
-  },
-  results: {
-    name: "results",
+  pregameCountdown: {
+    name: "pregameCountdown",
     duration: 15000
+    // duration: 1000
   },
-  postgame: {
-    name: "postgame",
+  pregameTitle: {
+    name: "pregameTitle",
+    duration: 5000,
+    // duration: 1000
+  },
+  pregameIntroduction: {
+    name: "pregameIntroduction",
+    duration: 10000,
+    // duration: 1000
+  },
+  roundIntroduction: {
+    name: "roundIntroduction",
+    duration: 5000,
+    // duration: 1000
+  },
+  roundInstructions: {
+    name: "roundInstructions",
+    duration: 10000,
+    // duration: 1000
+  },
+  minigameStart: {
+    name: "minigameStart",
+    duration: 5000
+    // duration: 1000
+  },
+  minigamePlay: {
+    name: "minigamePlay",
+    duration: 30000
+    // duration: 1000
+  },
+  minigameEnd: {
+    name: "minigameEnd",
+    duration: 5000
+    // duration: 1000
+  },
+  roundResultsScoreboard: {
+    name: "roundResultsScoreboard",
     duration: 10000
+    // duration: 1000
+  },
+  roundResultsLeaderboard: {
+    name: "roundResultsLeaderboard",
+    duration: 10000
+    // duration: 1000
+  },
+  postgameCelebration: {
+    name: "postgameCelebration",
+    duration: 10000
+    // duration: 1000
+  },
+  postgameRewards: {
+    name: "postgameRewards",
+    duration: 10000
+    // duration: 600000
   }
 };
 Game.minigames = [
@@ -242,8 +494,8 @@ Game.minigames = [
     instructions: "Click as fast as possible to score points. But watch out for the STOP sign, which will deduct points if you click while it's showing.",
   },
   {
-    name: "Whack-a-Block",
-    instructions: "whack dem blocks",
+    name: "Block Blaster",
+    instructions: "Tap blocks to score points. Be fast! Other players are gunning for the same blocks.",
   },
   {
     name: "Flappy Flock",
@@ -252,6 +504,10 @@ Game.minigames = [
   {
     name: "Nom nom",
     instructions: "You're a sphere. Eat smaller ones. Avoid bigger ones."
+  },
+  {
+    name: "Red Light Green Light",
+    instructions: "Run as far as possible by tapping, but stop running when you see the Red Light, which causes you to move backward.",
   },
   {
     name: "Block Party",
@@ -265,7 +521,7 @@ Game.minigames = [
 Game.modes = [
   {
     name: "Free For All",
-    instructions: "It’s every player for themself. Medals are rewarded based on your performance compared to other competitors. Score as many points as you can.",
+    instructions: "It’s every player for themself. Leaderboard points are rewarded based on your performance compared to other competitors. Score as many points as you can.",
   },
   {
     name: "Red Vs Blue",

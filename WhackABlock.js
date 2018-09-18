@@ -6,7 +6,7 @@ module.exports = class WhackABlock {
       this.mode = mode;
       this.scoreboard = scoreboard;
 
-      firebase.database().ref('whackABlock/blocks').set(this.blocks);
+      firebase.database().ref('minigame/whackABlock/blocks').remove();
   }
 
   logState() {
@@ -16,32 +16,40 @@ module.exports = class WhackABlock {
   handleCommandAdded(snapshot) {
     let command = snapshot.val();
 
-    this.blocks.forEach(block => {
-      if(command.x >= block.x - block.width / 2 && 
-        command.x <= block.x + block.width / 2 && 
-        command.y >= block.y - block.height / 2 && 
-        command.y <= block.y + block.height / 2) {
-        this.blocks.splice(this.blocks.indexOf(block), 1);
-        firebase.database().ref('whackABlock/blocks/' + block.id).remove();
-        this.mode.updateScoreboard(this.scoreboard, command.playerId, block.value);
-      }
-    });
+    let i = this.blocks.findIndex(block => block.id === command.blockId);
+    if(i !== -1) {
+      let block = this.blocks[i];
+      this.blocks.splice(i, 1);
+      firebase.database().ref('minigame/whackABlock/blocks/' + block.id).remove();
+      this.mode.updateScoreboard(this.scoreboard, command.playerId, block.value);
+    }
   }
 
   update() {
-    if(this.blocks.length < 10) {
-      let size = Math.random() * 10 + 10;
-      this.blocks.push({
-        x: Math.random() * 100,
-        y: Math.random() * 100,
-        width: size,
-        height: size,
-        value: Math.floor(Math.random() * 10) * 100
-      });
-      let key = firebase.database().ref('whackABlock/blocks').push(this.blocks[this.blocks.length - 1]).key;
+    if(this.blocks.length < 2000) {
+      let block = {};
+      block.position = {};
+      block.position.x = Math.random() * 800 - 400;
+      block.position.y = Math.random() * 800 - 400;
+      block.position.z = Math.random() * 800 - 400;
+
+      block.scale = {};
+      block.scale.x = Math.random() + 0.5;
+      block.scale.y = Math.random() + 0.5;
+      block.scale.z = Math.random() + 0.5;
+      
+      block.rotation = {};
+      block.rotation.x = Math.random() * 2 * Math.PI;
+      block.rotation.y = Math.random() * 2 * Math.PI;
+      block.rotation.z = Math.random() * 2 * Math.PI;
+
+      block.value = Math.floor(Math.random() * 10) * 10;
+
+      this.blocks.push(block);
+      let key = firebase.database().ref('minigame/whackABlock/blocks').push(this.blocks[this.blocks.length - 1]).key;
       this.blocks[this.blocks.length - 1].id = key;
     }
-    this.updateBots();
+    //this.updateBots();
   }
 
   updateBots() {
@@ -55,4 +63,6 @@ module.exports = class WhackABlock {
       }
     }
   }
+
+  shutdown() {}
 }

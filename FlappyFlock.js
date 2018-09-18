@@ -61,4 +61,6 @@ module.exports = class FlappyFlock {
   updateBots() {
 
   }
+
+  shutdown() {}
 }
