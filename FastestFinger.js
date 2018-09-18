@@ -32,14 +32,12 @@ module.exports = class FastestFinger {
   update() {
       if(this.penalty && Date.now() - this.goTime >= 3000 && Math.random() >= 0.99) {
         this.penalty = false;
-        this.logState();
         firebase.database().ref('fastestFinger/penalty').set(this.penalty);
         this.stopTime = Date.now();
       }
       
       if(!this.penalty && Date.now() - this.stopTime >= 3000 && Math.random() >= 0.99) {
         this.penalty = true;
-        this.logState();
         firebase.database().ref('fastestFinger/penalty').set(this.penalty);
         this.goTime = Date.now();
       }
@@ -55,4 +53,6 @@ module.exports = class FastestFinger {
       }
     }
   }
+
+  shutdown() {}
 }

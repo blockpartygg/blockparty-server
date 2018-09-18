@@ -1,0 +1,68 @@
+{
+  "states": {
+    "pregame": {
+      "name": "pregame",
+      "duration": 1000
+    },
+    "lobby": { 
+      "name": "duration",
+      "duration": 1000 
+    },
+    "minigame": { 
+      "name": "minigame",
+      "duration": 1000
+    },
+    "results": {
+      "name": "results",
+      "duration": 1000
+    },
+    "postgame": { 
+      "name": "postgame",
+      "duration": 1000 
+    }
+  },
+  "minigames": [
+    {
+      "name": "Fastest Finger",
+      "instructions": "Click as fast as possible to score points. But watch out for the STOP sign, which will deduct points if you click while it's showing."
+    },
+    {
+      "name": "Whack-a-Block",
+      "instructions": "whack dem blocks"
+    },
+    {
+      "name": "Flappy Flock",
+      "instructions": "tap to flap"
+    },
+    {
+      "name": "Block Party",
+      "instructions": "coming soon"
+    },
+    {
+      "name": "Vector Arena",
+      "instructions": "coming soon"
+    }
+  ],
+  "modes": [
+    {
+      "name": "Free For All",
+      "instructions": "It’s every player for themself. Medals are rewarded based on your performance compared to other competitors. Score as many points as you can."
+    },
+    {
+      "name": "Red Vs Blue",
+      "instructions": "It's red against blue."
+    },
+    {
+      "name": "One Vs One Million",
+      "instructions": "One super player vs the rest"
+    },
+    {
+      "name": "Teams",
+      "instructions": "team up with your friends and compete"
+    },
+    {
+      "name": "Player Vs Enemy",
+      "instructions": "it's everyone against the bots"
+    }
+  ]
+}

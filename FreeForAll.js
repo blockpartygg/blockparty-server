@@ -9,6 +9,14 @@ module.exports = class FreeForAll {
     this.teams = [];
   }
 
+  setScore(scoreboard, playerId, score) {
+    if(!scoreboard[playerId]) {
+      scoreboard[playerId] = 0;
+    }
+    scoreboard[playerId] = score;
+    firebase.database().ref('game/scoreboard/' + playerId).set(scoreboard[playerId]);
+  }
+
   updateScoreboard(scoreboard, playerId, score) {
     if(!scoreboard[playerId]) {
         scoreboard[playerId] = 0;
