@@ -482,8 +482,8 @@ Game.states = {
   },
   postgameRewards: {
     name: "postgameRewards",
-    // duration: 10000
-    duration: 1000
+    duration: 10000
+    // duration: 1000
   }
 };
 Game.minigames = [
