@@ -22,10 +22,10 @@ module.exports = class RedLightGreenLight {
     firebase.database().ref('minigame/redLightGreenLight/greenLight').set(this.greenLight);
 
     firebase.database().ref('minigame/redLightGreenLight/players').on('child_changed', snapshot => {
-        let player = snapshot.val();
-        if(player) {
-            this.mode.setScore(this.scoreboard, snapshot.key, Math.floor(player.positionY));
-        }
+      let player = snapshot.val();
+      if(player) {
+          this.mode.setScore(this.scoreboard, snapshot.key, Math.floor(player.positionY));
+      }
     });
   }
 

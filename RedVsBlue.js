@@ -11,6 +11,7 @@ module.exports = class RedVsBlue {
     this.teams = [];
     this.teams["redTeamId"] = [];
     this.teams["blueTeamId"] = [];
+    this.scores = [];
     firebase.database().ref('game/teams').remove();
     firebase.database().ref('players').once('value', snapshot => {      
       snapshot.forEach(player => {
@@ -38,6 +39,29 @@ module.exports = class RedVsBlue {
       });
       firebase.database().ref('game/teams').set(this.teams);
     });
+  }
+
+  setScore(scoreboard, playerId, score) {
+    if(!scoreboard[playerId]) {
+      scoreboard[playerId] = 0;
+    }
+    scoreboard[playerId] = score;
+
+    let teamId;
+    if(this.teams["redTeamId"].includes(playerId.toString())) {
+        teamId = "redTeamId";
+    } else if(this.teams["blueTeamId"].includes(playerId.toString())) {
+        teamId = "blueTeamId";
+    }
+
+    let teamScore = 0;
+    this.teams[teamId].forEach(id => {
+        if(scoreboard[id]) {
+          teamScore += scoreboard[id];
+        }
+    });
+
+    firebase.database().ref('game/scoreboard/' + teamId).set(teamScore);
   }
 
   updateScoreboard(scoreboard, playerId, score) {

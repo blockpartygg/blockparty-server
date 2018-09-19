@@ -179,8 +179,9 @@ class Game {
     this.round++;
     //this.minigame = Game.minigames[Math.floor(Math.random() * 3)];
     this.minigame = Math.random() > 0.5 ? Game.minigames[1] : Game.minigames[4];
-    // this.mode = Game.modes[Math.floor(Math.random() * 2)];
-    this.mode = Game.modes[0];
+    // this.minigame = Game.minigames[4];
+    this.mode = Game.modes[Math.floor(Math.random() * 2)];
+    // this.mode = Game.modes[1];
     
     // set teams here
     if(this.mode === Game.modes[0]) {
@@ -485,7 +486,7 @@ Game.states = {
   postgameRewards: {
     name: "postgameRewards",
     duration: 10000
-    // duration: 600000
+    // duration: 1000
   }
 };
 Game.minigames = [
