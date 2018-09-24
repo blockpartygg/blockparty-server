@@ -3,7 +3,7 @@ const FastestFinger = require('./FastestFinger');
 const WhackABlock = require('./WhackABlock');
 const FlappyFlock = require('./FlappyFlock');
 const RedLightGreenLight = require('./RedLightGreenLight');
-const NomNom = require('./NomNom');
+const Blockio = require('./Blockio');
 const FreeForAll = require('./FreeForAll');
 const RedVsBlue = require('./RedVsBlue');
 
@@ -87,7 +87,7 @@ class Game {
         commands: this.commands,
     });
 
-    this.sendSystemMessage("The next game is starting soon.");
+    // this.sendSystemMessage("The next game is starting soon.");
 
     // start the countdown to the lobby
     setTimeout(() => { this.setPregameTitleState(); }, Game.states.pregameCountdown.duration);
@@ -127,7 +127,7 @@ class Game {
         commands: this.commands,
     });
 
-    this.sendSystemMessage("It's party time!");
+    // this.sendSystemMessage("It's party time!");
 
     // start the countdown to the lobby
     setTimeout(() => { this.setPregameIntroductionState(); }, Game.states.pregameTitle.duration);
@@ -177,10 +177,9 @@ class Game {
     this.startTime = new Date(Date.now());
     this.endTime = new Date(Date.now() + Game.states.roundIntroduction.duration);
     this.round++;
-    //this.minigame = Game.minigames[Math.floor(Math.random() * 3)];
-    this.minigame = Math.random() > 0.5 ? Game.minigames[1] : Game.minigames[4];
-    // this.mode = Game.modes[Math.floor(Math.random() * 2)];
-    this.mode = Game.modes[0];
+    this.minigame = Game.minigames[Math.floor(Math.random() * 3)];
+    // this.minigame =  Game.minigames[1];
+    this.mode = Game.modes[Math.floor(Math.random() * 2)];
     
     // set teams here
     if(this.mode === Game.modes[0]) {
@@ -211,7 +210,7 @@ class Game {
         commands: this.commands,
     });
 
-    this.sendSystemMessage("Round " + this.round + " is starting soon.");
+    // this.sendSystemMessage("Round " + this.round + " is starting soon.");
 
     // start the countdown to the lobby
     setTimeout(() => { this.setRoundInstructionsState(); }, Game.states.roundIntroduction.duration);
@@ -267,19 +266,19 @@ class Game {
     
     // set private game state
     if(this.minigame === Game.minigames[0]) {
-      this.currentMinigame = new FastestFinger(this.currentMode, this.scoreboard);
+      this.currentMinigame = new RedLightGreenLight(this.currentMode, this.scoreboard);
     }
     else if(this.minigame === Game.minigames[1]) {
-        this.currentMinigame = new WhackABlock(this.currentMode, this.scoreboard);
+      this.currentMinigame = new WhackABlock(this.currentMode, this.scoreboard);
     }
     else if(this.minigame === Game.minigames[2]) {
-      this.currentMinigame = new FlappyFlock(this.currentMode, this.scoreboard);
+      this.currentMinigame = new Blockio(this.currentMode, this.scoreboard);
     }
     else if(this.minigame === Game.minigames[3]) {
-      this.currentMinigame = new NomNom(this.currentMode, this.scoreboard);
+      this.currentMinigame = new FastestFinger(this.currentMode, this.scoreboard);
     }
     else if(this.minigame === Game.minigames[4]) {
-      this.currentMinigame = new RedLightGreenLight(this.currentMode, this.scoreboard);
+      this.currentMinigame = new FlappyFlock(this.currentMode, this.scoreboard);
     }
 
     // log state to the console
@@ -347,7 +346,7 @@ class Game {
         endTime: this.endTime, 
     });
 
-    this.sendSystemMessage("Round " + this.round + " has ended.");
+    // this.sendSystemMessage("Round " + this.round + " has ended.");
 
     if(this.round < 5) {
       setTimeout(() => { this.setRoundResultsLeaderboardState(); }, Game.states.roundResultsScoreboard.duration);
@@ -399,7 +398,7 @@ class Game {
         endTime: this.endTime, 
     });
 
-    this.sendSystemMessage("The game has ended.");
+    // this.sendSystemMessage("The game has ended.");
 
     // start the countdown to the lobby
     setTimeout(() => { this.setPostgameRewardsState(); }, Game.states.postgameCelebration.duration);
@@ -419,6 +418,17 @@ class Game {
         state: this.state, 
         startTime: this.startTime,
         endTime: this.endTime, 
+    });
+
+    firebase.database().ref('players').once('value', snapshot => {
+      snapshot.forEach(player => {
+        if(!player.val().playing || player.key === "redTeamId" || player.key === "blueTeamId") {
+          return;
+        }
+
+        const currentCurrency = player.val().currency;
+        player.ref.update({ currency: currentCurrency + 100 });
+      });
     });
 
     // start the countdown to the lobby
@@ -485,29 +495,29 @@ Game.states = {
   postgameRewards: {
     name: "postgameRewards",
     duration: 10000
-    // duration: 600000
+    // duration: 10000
   }
 };
 Game.minigames = [
   {
-    name: "Fastest Finger",
-    instructions: "Click as fast as possible to score points. But watch out for the STOP sign, which will deduct points if you click while it's showing.",
+    name: "Red Light Green Light",
+    instructions: "Run as far as possible by tapping, but stop running when you see the Red Light, which causes you to move backward.",
   },
   {
     name: "Block Blaster",
     instructions: "Tap blocks to score points. Be fast! Other players are gunning for the same blocks.",
   },
   {
+    name: "Block.io",
+    instructions: "Eat the smaller blocks while avoiding the bigger ones."
+  },
+  {
+    name: "Fastest Finger",
+    instructions: "Click as fast as possible to score points. But watch out for the STOP sign, which will deduct points if you click while it's showing.",
+  },
+  {
     name: "Flappy Flock",
     instructions: "tap to flap"
-  },
-  {
-    name: "Nom nom",
-    instructions: "You're a sphere. Eat smaller ones. Avoid bigger ones."
-  },
-  {
-    name: "Red Light Green Light",
-    instructions: "Run as far as possible by tapping, but stop running when you see the Red Light, which causes you to move backward.",
   },
   {
     name: "Block Party",
@@ -528,7 +538,7 @@ Game.modes = [
     instructions: "It's red against blue.",
   },
   {
-    name: "One Vs One Million",
+    name: "1 Vs 100",
     instructions: "One super player vs the rest",
   },
   {

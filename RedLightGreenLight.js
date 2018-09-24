@@ -12,9 +12,9 @@ module.exports = class RedLightGreenLight {
 
     for(let bot = 0; bot < 10; bot++) {
       this.bots[bot] = {
-        positionY: 0,
-        velocityY: 0,
-        tapAccelerationY: 5
+        positionZ: 0,
+        velocityZ: 0,
+        tapAccelerationZ: 5
       }
       firebase.database().ref('minigame/redLightGreenLight/players/' + bot).set(this.bots[bot]);
     }
@@ -22,10 +22,10 @@ module.exports = class RedLightGreenLight {
     firebase.database().ref('minigame/redLightGreenLight/greenLight').set(this.greenLight);
 
     firebase.database().ref('minigame/redLightGreenLight/players').on('child_changed', snapshot => {
-        let player = snapshot.val();
-        if(player) {
-            this.mode.setScore(this.scoreboard, snapshot.key, Math.floor(player.positionY));
-        }
+      let player = snapshot.val();
+      if(player) {
+          this.mode.setScore(this.scoreboard, snapshot.key, Math.floor(player.positionZ));
+      }
     });
   }
 
@@ -57,21 +57,21 @@ module.exports = class RedLightGreenLight {
     delta /= 1000;
 
     for(let i = 0; i < 10; i++) {
-      this.bots[i].velocityY *= 0.95;
-      this.bots[i].positionY += this.bots[i].velocityY * delta;
-      if(this.bots[i].positionY <= 0) {
-        this.bots[i].positionY = 0;
+      this.bots[i].velocityZ *= 0.95;
+      this.bots[i].positionZ += this.bots[i].velocityZ * delta;
+      if(this.bots[i].positionZ <= 0) {
+        this.bots[i].positionZ = 0;
       }
 
       
       if(this.greenLight) {
         if(Math.random() >= 0.8) {
-          this.bots[i].velocityY = this.bots[i].tapAccelerationY;
+          this.bots[i].velocityZ = this.bots[i].tapAccelerationZ;
         }
       }
       else {
         if(Math.random() >= 0.995) {
-          this.bots[i].velocityY = -2 * this.bots[i].tapAccelerationY;
+          this.bots[i].velocityZ = -2 * this.bots[i].tapAccelerationZ;
         }
       }
 
