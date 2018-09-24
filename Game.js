@@ -178,6 +178,7 @@ class Game {
     this.endTime = new Date(Date.now() + Game.states.roundIntroduction.duration);
     this.round++;
     this.minigame = Game.minigames[Math.floor(Math.random() * 3)];
+    // this.minigame =  Game.minigames[1];
     this.mode = Game.modes[Math.floor(Math.random() * 2)];
     
     // set teams here
@@ -419,6 +420,17 @@ class Game {
         endTime: this.endTime, 
     });
 
+    firebase.database().ref('players').once('value', snapshot => {
+      snapshot.forEach(player => {
+        if(!player.val().playing || player.key === "redTeamId" || player.key === "blueTeamId") {
+          return;
+        }
+
+        const currentCurrency = player.val().currency;
+        player.ref.update({ currency: currentCurrency + 100 });
+      });
+    });
+
     // start the countdown to the lobby
     setTimeout(() => { this.setPregameCountdownState(); }, Game.states.postgameRewards.duration);
   }
@@ -458,7 +470,7 @@ Game.states = {
   minigamePlay: {
     name: "minigamePlay",
     duration: 30000
-    // duration: 600000
+    // duration: 1000
   },
   minigameEnd: {
     name: "minigameEnd",
@@ -483,7 +495,7 @@ Game.states = {
   postgameRewards: {
     name: "postgameRewards",
     duration: 10000
-    // duration: 1000
+    // duration: 10000
   }
 };
 Game.minigames = [
@@ -497,7 +509,7 @@ Game.minigames = [
   },
   {
     name: "Block.io",
-    instructions: "You're a block. Eat smaller ones. Avoid bigger ones."
+    instructions: "Eat the smaller blocks while avoiding the bigger ones."
   },
   {
     name: "Fastest Finger",

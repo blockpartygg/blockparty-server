@@ -55,12 +55,14 @@ module.exports = class RedVsBlue {
     }
 
     let teamScore = 0;
-    this.teams[teamId].forEach(id => {
+    if(this.teams[teamId]) {
+      this.teams[teamId].forEach(id => {
         if(scoreboard[id]) {
           teamScore += scoreboard[id];
         }
-    });
-
+      });
+    }
+    
     firebase.database().ref('game/scoreboard/' + teamId).set(teamScore);
   }
 
