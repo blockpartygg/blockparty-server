@@ -422,7 +422,7 @@ class Game {
 
     firebase.database().ref('players').once('value', snapshot => {
       snapshot.forEach(player => {
-        if(!player.val().playing || player.key === "redTeamId" || player.key === "blueTeamId") {
+        if(!player.val().playing || player.key === "redTeamId" || player.key === "blueTeamId" || player.key === "0" || player.key === "1" || player.key === "2" || player.key === "3" || player.key === "4" || player.key === "5" || player.key === "6" || player.key === "7" || player.key === "8" || player.key === "9") {
           return;
         }
 
@@ -439,7 +439,7 @@ class Game {
 Game.states = {
   pregameCountdown: {
     name: "pregameCountdown",
-    duration: 15000
+    duration: 60000
     // duration: 1000
   },
   pregameTitle: {
@@ -474,8 +474,8 @@ Game.states = {
   },
   minigameEnd: {
     name: "minigameEnd",
+    // duration: 5000
     duration: 5000
-    // duration: 1000
   },
   roundResultsScoreboard: {
     name: "roundResultsScoreboard",
@@ -495,7 +495,7 @@ Game.states = {
   postgameRewards: {
     name: "postgameRewards",
     duration: 10000
-    // duration: 10000
+    // duration: 1000
   }
 };
 Game.minigames = [
