@@ -13,8 +13,7 @@ module.exports = class RedLightGreenLight {
     for(let bot = 0; bot < 10; bot++) {
       this.bots[bot] = {
         positionZ: 0,
-        velocityZ: 0,
-        tapAccelerationZ: 5
+        moving: false,
       }
       firebase.database().ref('minigame/redLightGreenLight/players/' + bot).set(this.bots[bot]);
     }
@@ -27,6 +26,8 @@ module.exports = class RedLightGreenLight {
           this.mode.setScore(this.scoreboard, snapshot.key, Math.floor(player.positionZ));
       }
     });
+
+    this.doneMovingBot = this.doneMovingBot.bind(this);
   }
 
   logState() {
@@ -57,26 +58,27 @@ module.exports = class RedLightGreenLight {
     delta /= 1000;
 
     for(let i = 0; i < 10; i++) {
-      this.bots[i].velocityZ *= 0.95;
-      this.bots[i].positionZ += this.bots[i].velocityZ * delta;
-      if(this.bots[i].positionZ <= 0) {
-        this.bots[i].positionZ = 0;
-      }
-
-      
-      if(this.greenLight) {
-        if(Math.random() >= 0.8) {
-          this.bots[i].velocityZ = this.bots[i].tapAccelerationZ;
+      if(!this.bots[i].moving) {
+        if(this.greenLight) {
+          if(Math.random() >= 0.925) {
+            this.bots[i].moving = true;
+            setTimeout(this.doneMovingBot, 151, i, 1);
+          }
+        }
+        else {
+          if(Math.random() >= 0.99) {
+            this.bots[i].moving = true;
+            setTimeout(this.doneMovingBot, 151, i, -2);
+          }
         }
       }
-      else {
-        if(Math.random() >= 0.995) {
-          this.bots[i].velocityZ = -2 * this.bots[i].tapAccelerationZ;
-        }
-      }
-
-      firebase.database().ref('minigame/redLightGreenLight/players/' + i).set(this.bots[i]);
     }
+  }
+
+  doneMovingBot(botId, distance) {
+    this.bots[botId].positionZ += distance;
+    firebase.database().ref('minigame/redLightGreenLight/players/' + botId).set(this.bots[botId]); 
+    this.bots[botId].moving = false;
   }
 
   shutdown() {
