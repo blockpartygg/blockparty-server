@@ -20,46 +20,52 @@ module.exports = class WhackABlock {
     if(i !== -1) {
       let block = this.blocks[i];
       this.blocks.splice(i, 1);
-      firebase.database().ref('minigame/whackABlock/blocks/' + block.id).remove();
+      firebase.database().ref('minigame/whackABlock/blocks/' + block.id).update({ playerId: command.playerId }).then(() => {
+        firebase.database().ref('minigame/whackABlock/blocks/' + block.id).remove();
+      });
       this.mode.updateScoreboard(this.scoreboard, command.playerId, block.value);
     }
   }
 
   update() {
-    if(this.blocks.length < 2000) {
+    if(this.blocks.length < 100) {
       let block = {};
       block.position = {};
-      block.position.x = Math.random() * 800 - 400;
-      block.position.y = Math.random() * 800 - 400;
-      block.position.z = Math.random() * 800 - 400;
+      block.position.x = Math.random() * 200 - 100;
+      block.position.y = Math.random() * 200 - 100;
+      block.position.z = Math.random() * 200 - 100;
 
       block.scale = {};
-      block.scale.x = Math.random() + 0.5;
-      block.scale.y = Math.random() + 0.5;
-      block.scale.z = Math.random() + 0.5;
+      let scale = Math.random() * 20 + 1;
+      block.scale.x = scale;
+      block.scale.y = scale;
+      block.scale.z = scale;
       
       block.rotation = {};
       block.rotation.x = Math.random() * 2 * Math.PI;
       block.rotation.y = Math.random() * 2 * Math.PI;
       block.rotation.z = Math.random() * 2 * Math.PI;
 
-      block.value = Math.floor(Math.random() * 10) * 10;
+      block.value = Math.floor(Math.random() * 10) + 1;
 
       this.blocks.push(block);
       let key = firebase.database().ref('minigame/whackABlock/blocks').push(this.blocks[this.blocks.length - 1]).key;
       this.blocks[this.blocks.length - 1].id = key;
     }
-    //this.updateBots();
+
+    this.updateBots();
   }
 
   updateBots() {
     for(var i = 0; i < 10; i++) {
-      if(Math.random() >= 0.99) {
-        firebase.database().ref('game/commands').push({
-          playerId: Math.floor(Math.random() * 10),
-          x: Math.random() * 100,
-          y: Math.random() * 100
-        });
+      if(Math.random() >= 0.995) {
+        let blockKey = Math.floor(Math.random() * this.blocks.length);
+        if(this.blocks[blockKey]) {
+          firebase.database().ref('game/commands').push({
+            playerId: i,
+            blockId: this.blocks[blockKey].id
+          });
+        }
       }
     }
   }
