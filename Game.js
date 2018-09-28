@@ -65,7 +65,6 @@ class Game {
     this.scoreboard = [];
     this.leaderboard = [];
     this.commands = [];
-
     this.currentMinigame = null;
     this.currentMode = null;
     this.minigameUpdateTimer = 0;
@@ -87,7 +86,6 @@ class Game {
         commands: this.commands,
     });
 
-    // this.sendSystemMessage("The next game is starting soon.");
     // start the countdown to the lobby
     setTimeout(() => { this.setPregameTitleState(); }, Game.states.pregameCountdown.duration);
   }
