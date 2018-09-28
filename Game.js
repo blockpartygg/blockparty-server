@@ -88,7 +88,6 @@ class Game {
     });
 
     // this.sendSystemMessage("The next game is starting soon.");
-
     // start the countdown to the lobby
     setTimeout(() => { this.setPregameTitleState(); }, Game.states.pregameCountdown.duration);
   }
@@ -127,8 +126,6 @@ class Game {
         commands: this.commands,
     });
 
-    // this.sendSystemMessage("It's party time!");
-
     // start the countdown to the lobby
     setTimeout(() => { this.setPregameIntroductionState(); }, Game.states.pregameTitle.duration);
   }
@@ -145,7 +142,6 @@ class Game {
     this.scoreboard = [];
     this.leaderboard = [];
     this.commands = [];
-
     this.currentMinigame = null;
     this.currentMode = null;
     this.minigameUpdateTimer = 0;
@@ -178,7 +174,7 @@ class Game {
     this.endTime = new Date(Date.now() + Game.states.roundIntroduction.duration);
     this.round++;
     this.minigame = Game.minigames[Math.floor(Math.random() * 3)];
-    // this.minigame =  Game.minigames[1];
+    // this.minigame =  Game.minigames[0];
     this.mode = Game.modes[Math.floor(Math.random() * 2)];
     
     // set teams here
@@ -209,8 +205,6 @@ class Game {
         scoreboard: this.scoreboard,
         commands: this.commands,
     });
-
-    // this.sendSystemMessage("Round " + this.round + " is starting soon.");
 
     // start the countdown to the lobby
     setTimeout(() => { this.setRoundInstructionsState(); }, Game.states.roundIntroduction.duration);
@@ -346,8 +340,6 @@ class Game {
         endTime: this.endTime, 
     });
 
-    // this.sendSystemMessage("Round " + this.round + " has ended.");
-
     if(this.round < 5) {
       setTimeout(() => { this.setRoundResultsLeaderboardState(); }, Game.states.roundResultsScoreboard.duration);
     }
@@ -397,8 +389,6 @@ class Game {
         startTime: this.startTime,
         endTime: this.endTime, 
     });
-
-    // this.sendSystemMessage("The game has ended.");
 
     // start the countdown to the lobby
     setTimeout(() => { this.setPostgameRewardsState(); }, Game.states.postgameCelebration.duration);
@@ -470,22 +460,22 @@ Game.states = {
   minigamePlay: {
     name: "minigamePlay",
     duration: 30000
-    // duration: 1000
+    // duration: 3000
   },
   minigameEnd: {
     name: "minigameEnd",
-    // duration: 5000
     duration: 5000
+    // duration: 1000
   },
   roundResultsScoreboard: {
     name: "roundResultsScoreboard",
     duration: 10000
-    // duration: 1000
+    // duration: 3000
   },
   roundResultsLeaderboard: {
     name: "roundResultsLeaderboard",
     duration: 10000
-    // duration: 1000
+    // duration: 1000000
   },
   postgameCelebration: {
     name: "postgameCelebration",
