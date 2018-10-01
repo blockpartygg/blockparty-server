@@ -171,9 +171,10 @@ class Game {
     this.startTime = new Date(Date.now());
     this.endTime = new Date(Date.now() + Game.states.roundIntroduction.duration);
     this.round++;
-    this.minigame = Game.minigames[Math.floor(Math.random() * 3)];
-    // this.minigame =  Game.minigames[0];
+    //this.minigame = Game.minigames[Math.floor(Math.random() * 3)];
+    this.minigame =  Game.minigames[2];
     this.mode = Game.modes[Math.floor(Math.random() * 2)];
+    // this.mode = Game.modes[1];
     
     // set teams here
     if(this.mode === Game.modes[0]) {
@@ -410,7 +411,7 @@ class Game {
 
     firebase.database().ref('players').once('value', snapshot => {
       snapshot.forEach(player => {
-        if(!player.val().playing || player.key === "redTeamId" || player.key === "blueTeamId" || player.key === "0" || player.key === "1" || player.key === "2" || player.key === "3" || player.key === "4" || player.key === "5" || player.key === "6" || player.key === "7" || player.key === "8" || player.key === "9") {
+        if(!player.val().playing || player.val().isGuest || player.key === "redTeamId" || player.key === "blueTeamId" || player.key === "0" || player.key === "1" || player.key === "2" || player.key === "3" || player.key === "4" || player.key === "5" || player.key === "6" || player.key === "7" || player.key === "8" || player.key === "9") {
           return;
         }
 
@@ -427,63 +428,63 @@ class Game {
 Game.states = {
   pregameCountdown: {
     name: "pregameCountdown",
-    duration: 60000
-    // duration: 1000
+    // duration: 60000
+    duration: 1000
   },
   pregameTitle: {
     name: "pregameTitle",
-    duration: 5000,
-    // duration: 1000
+    // duration: 5000,
+    duration: 1000
   },
   pregameIntroduction: {
     name: "pregameIntroduction",
-    duration: 10000,
-    // duration: 1000
+    // duration: 10000,
+    duration: 1000
   },
   roundIntroduction: {
     name: "roundIntroduction",
-    duration: 5000,
-    // duration: 1000
+    // duration: 5000,
+    duration: 1000
   },
   roundInstructions: {
     name: "roundInstructions",
-    duration: 10000,
-    // duration: 1000
+    // duration: 10000,
+    duration: 1000
   },
   minigameStart: {
     name: "minigameStart",
-    duration: 5000
+    duration: 3000
     // duration: 1000
   },
   minigamePlay: {
     name: "minigamePlay",
-    duration: 30000
-    // duration: 3000
+    // duration: 30000
+    duration: 600000
   },
   minigameEnd: {
     name: "minigameEnd",
-    duration: 5000
+    duration: 3000
     // duration: 1000
   },
   roundResultsScoreboard: {
     name: "roundResultsScoreboard",
-    duration: 10000
-    // duration: 3000
+    // duration: 10000
+    duration: 1000
   },
   roundResultsLeaderboard: {
     name: "roundResultsLeaderboard",
-    duration: 10000
-    // duration: 1000000
+    // duration: 10000
+    duration: 1000
   },
   postgameCelebration: {
     name: "postgameCelebration",
-    duration: 10000
-    // duration: 1000
+    // duration: 10000
+    duration: 1000
   },
   postgameRewards: {
     name: "postgameRewards",
-    duration: 10000
-    // duration: 1000
+    // duration: 10000
+    duration: 1000
   }
 };
 Game.minigames = [

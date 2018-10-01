@@ -11,13 +11,14 @@ module.exports = class Blockio {
 
     for(let bot = 0; bot < 10; bot++) {
       this.bots[bot] = {
-        positionX: Math.random() * 100 - 50,
-        positionY: Math.random() * 100 - 50,
+        positionX: Math.random() * 10 - 5,
+        positionY: Math.random() * 10 - 5,
         velocityX: 0,
         velocityY: 0,
         accelerationX: 0,
         accelerationY: 0,
-        speed: 20,
+        speed: 1,
+        targetFoodId: -1
       }
       firebase.database().ref('minigame/blockio/players/' + bot).set(this.bots[bot]);
     }
@@ -36,19 +37,19 @@ module.exports = class Blockio {
 
     let i = this.food.findIndex(food => food.id === command.foodId);
     if(i !== -1) {
-      let food = this.food[i];
+      let foodId = this.food[i].id;
       this.food.splice(i, 1);
-      firebase.database().ref('minigame/blockio/food/' + food.id).remove();
+      firebase.database().ref('minigame/blockio/food/' + foodId).remove();
       this.mode.updateScoreboard(this.scoreboard, command.playerId, 1);
     }
   }
 
   update(delta) {
-    if(this.food.length < 1000) {
+    if(this.food.length < 10) {
       let food = {};
       food.position = {};
-      food.position.x = Math.random() * 100 - 50;
-      food.position.y = Math.random() * 100 - 50;
+      food.position.x = Math.random() * 10 - 5;
+      food.position.y = Math.random() * 10 - 5;
       
       this.food.push(food);
       let key = firebase.database().ref('minigame/blockio/food').push(this.food[this.food.length - 1]).key;
@@ -61,23 +62,47 @@ module.exports = class Blockio {
     delta /= 1000;
 
     for(let i = 0; i < 10; i++) {
-      this.bots[i].velocityX += Math.cos(Date.now()) * this.bots[i].speed * delta;
-      this.bots[i].velocityY += Math.sin(Date.now()) * this.bots[i].speed * delta;
+      if(this.bots[i].targetFoodId === -1) {
+        let closestFoodDistanceSquared = 200;
+        let closestFoodId;
+        this.food.forEach(food => {
+          let distanceSquared = this.distanceSquared(this.bots[i].positionX, this.bots[i].positionY, food.position.x, food.position.y);
+          if(distanceSquared < closestFoodDistanceSquared) {
+            closestFoodId = food.id;
+            closestFoodDistanceSquared = distanceSquared;
+          }
+        });
+        this.bots[i].targetFoodId = closestFoodId;
+      }
+
+      if(this.bots[i].targetFoodId !== -1) {
+        let food = this.food.find(f => f.id === this.bots[i].targetFoodId);
+        if(food !== undefined) {
+          let normalizedDeltaX = (food.position.x - this.bots[i].positionX) / Math.sqrt(this.distanceSquared(food.position.x, this.bots[i].positionX, food.position.y, this.bots[i].positionY));
+          let normalizedDeltaY = (food.position.y - this.bots[i].positionY) / Math.sqrt(this.distanceSquared(food.position.x, this.bots[i].positionX, food.position.y, this.bots[i].positionY));
+          this.bots[i].velocityX += normalizedDeltaX * this.bots[i].speed * delta;
+          this.bots[i].velocityY += normalizedDeltaY * this.bots[i].speed * delta;
+        }
+        else {
+          this.bots[i].targetFoodId = -1;
+        }
+      }
+      
       this.bots[i].velocityX *= 0.95;
       this.bots[i].velocityY *= 0.95;
       this.bots[i].positionX += this.bots[i].velocityX * delta;
       this.bots[i].positionY += this.bots[i].velocityY * delta;
-      if(this.bots[i].positionX <= -50) {
-        this.bots[i].positionX = -50;
+      if(this.bots[i].positionX <= -5) {
+        this.bots[i].positionX = -5;
       }
-      if(this.bots[i].positionX >= 50) {
-        this.bots[i].positionX = 50;
+      if(this.bots[i].positionX >= 5) {
+        this.bots[i].positionX = 5;
       }
-      if(this.bots[i].positionY <= -50) {
-        this.bots[i].positionY = -50;
+      if(this.bots[i].positionY <= -5) {
+        this.bots[i].positionY = -5;
       }
-      if(this.bots[i].positionY >= 50) {
-        this.bots[i].positionY = 50;
+      if(this.bots[i].positionY >= 5) {
+        this.bots[i].positionY = 5;
       }
 
       for(var key in this.food) {
@@ -96,6 +121,11 @@ module.exports = class Blockio {
 
       firebase.database().ref('minigame/blockio/players/' + i).set(this.bots[i]);
     }
+  }
+
+  distanceSquared(x1, y1, x2, y2) {
+    let distanceSquared = Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2);
+    return distanceSquared;
   }
 
   shutdown() {

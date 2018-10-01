@@ -34,18 +34,15 @@ module.exports = class WhackABlock {
       block.position.x = Math.random() * 200 - 100;
       block.position.y = Math.random() * 200 - 100;
       block.position.z = Math.random() * 200 - 100;
-
       block.scale = {};
       let scale = Math.random() * 20 + 1;
       block.scale.x = scale;
       block.scale.y = scale;
       block.scale.z = scale;
-      
       block.rotation = {};
       block.rotation.x = Math.random() * 2 * Math.PI;
       block.rotation.y = Math.random() * 2 * Math.PI;
       block.rotation.z = Math.random() * 2 * Math.PI;
-
       block.value = Math.floor(Math.random() * 10) + 1;
 
       this.blocks.push(block);
