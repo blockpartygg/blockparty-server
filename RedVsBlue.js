@@ -3,6 +3,8 @@ const firebase = require('firebase-admin');
 module.exports = class RedVsBlue {
   constructor() {
     this.teams = [];
+
+    this.setupTeams();
   }
 
   setupTeams(teams) {
