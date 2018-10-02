@@ -1,12 +1,15 @@
 const firebase = require('firebase-admin');
 
-module.exports = class WhackABlock {
-  constructor(mode, scoreboard) {
+module.exports = class BlockBlaster {
+  constructor(game) {
+      this.game = game;
       this.blocks = [];
-      this.mode = mode;
-      this.scoreboard = scoreboard;
 
       firebase.database().ref('minigame/whackABlock/blocks').remove();
+  }
+
+  setMode(mode) {
+    this.mode = mode;
   }
 
   logState() {
@@ -23,7 +26,7 @@ module.exports = class WhackABlock {
       firebase.database().ref('minigame/whackABlock/blocks/' + block.id).update({ playerId: command.playerId }).then(() => {
         firebase.database().ref('minigame/whackABlock/blocks/' + block.id).remove();
       });
-      this.mode.updateScoreboard(this.scoreboard, command.playerId, block.value);
+      this.game.mode.updateScoreboard(this.game.game.scoreboard, command.playerId, block.value);
     }
   }
 
