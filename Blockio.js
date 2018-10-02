@@ -1,9 +1,8 @@
 const firebase = require('firebase-admin');
 
 module.exports = class Blockio {
-  constructor(mode, scoreboard) {
-    this.mode = mode;
-    this.scoreboard = scoreboard;
+  constructor(game) {
+    this.game = game;
     this.food = [];
     this.bots = [];
 
@@ -24,6 +23,10 @@ module.exports = class Blockio {
     }
   }
 
+  setMode(mode) {
+    this.mode = mode;
+  }
+
   logState() {
     // console.log('redLightGreenLight: { greenLight:', this.greenLight,
     //   ', goTime:', this.goTime,
@@ -40,7 +43,7 @@ module.exports = class Blockio {
       let foodId = this.food[i].id;
       this.food.splice(i, 1);
       firebase.database().ref('minigame/blockio/food/' + foodId).remove();
-      this.mode.updateScoreboard(this.scoreboard, command.playerId, 1);
+      this.game.mode.updateScoreboard(this.game.game.scoreboard, command.playerId, 1);
     }
   }
 
