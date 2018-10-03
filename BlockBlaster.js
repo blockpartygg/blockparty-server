@@ -1,33 +1,15 @@
-const firebase = require('firebase-admin');
+const socketManager = require('./SocketManager');
 
 module.exports = class BlockBlaster {
   constructor(game) {
       this.game = game;
       this.blocks = [];
 
-      firebase.database().ref('minigame/whackABlock/blocks').remove();
-  }
-
-  setMode(mode) {
-    this.mode = mode;
-  }
-
-  logState() {
-    console.log('whackABlock: { blocks:', this.blocks, '}');
-  }
-
-  handleCommandAdded(snapshot) {
-    let command = snapshot.val();
-
-    let i = this.blocks.findIndex(block => block.id === command.blockId);
-    if(i !== -1) {
-      let block = this.blocks[i];
-      this.blocks.splice(i, 1);
-      firebase.database().ref('minigame/whackABlock/blocks/' + block.id).update({ playerId: command.playerId }).then(() => {
-        firebase.database().ref('minigame/whackABlock/blocks/' + block.id).remove();
+      socketManager.server.on('minigames/blockBlaster/block_changed', (blockId, playerId) => {
+        this.blocks[blockId].playerId = playerId;
+        this.game.mode.incrementScore(this.game.game.scoreboard, playerId, this.blocks[blockId].value);
+        socketManager.server.emit('minigames/blockBlaster/block_removed', blockId, this.blocks[blockId]);
       });
-      this.game.mode.updateScoreboard(this.game.game.scoreboard, command.playerId, block.value);
-    }
   }
 
   update() {
@@ -49,22 +31,22 @@ module.exports = class BlockBlaster {
       block.value = Math.floor(Math.random() * 10) + 1;
 
       this.blocks.push(block);
-      let key = firebase.database().ref('minigame/whackABlock/blocks').push(this.blocks[this.blocks.length - 1]).key;
-      this.blocks[this.blocks.length - 1].id = key;
+      const blockId = this.blocks.length - 1;
+      this.blocks[blockId].id = blockId;
+      socketManager.server.emit('minigames/blockBlaster/block_added', blockId, this.blocks[blockId]);
     }
 
     this.updateBots();
   }
 
   updateBots() {
-    for(var i = 0; i < 10; i++) {
+    for(var playerId = 0; playerId < 10; playerId++) {
       if(Math.random() >= 0.995) {
-        let blockKey = Math.floor(Math.random() * this.blocks.length);
-        if(this.blocks[blockKey]) {
-          firebase.database().ref('game/commands').push({
-            playerId: i,
-            blockId: this.blocks[blockKey].id
-          });
+        let blockId = Math.floor(Math.random() * this.blocks.length);
+        if(this.blocks[blockId]) {
+          this.blocks[blockId].playerId = playerId;
+          this.game.mode.incrementScore(this.game.game.scoreboard, playerId, this.blocks[blockId].value);
+          socketManager.server.emit('minigames/blockBlaster/block_removed', blockId, this.blocks[blockId]);
         }
       }
     }
