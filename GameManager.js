@@ -37,7 +37,7 @@ class GameManager {
 
   // write game state to the firebase database
   writeState() {
-    firebase.database.ref('game').set(this.game);
+    firebase.database.ref('game').update(this.game);
   }
 
   setPregameCountdownState() {
@@ -91,7 +91,7 @@ class GameManager {
 
   selectMinigame() {
     //this.game.minigame = this.getRandomMinigame();
-    this.game.minigame =  Config.minigames.redLightGreenLight;
+    this.game.minigame =  Config.minigames.blockBlaster;
     switch(this.game.minigame) {
       case Config.minigames.redLightGreenLight:
         this.minigame = new RedLightGreenLight(this);
@@ -124,7 +124,7 @@ class GameManager {
         this.mode = new RedVsBlue();
         break;
     }
-    this.minigame.setMode(this.mode);
+    // this.minigame.setMode(this.mode);
   }
 
   getRandomMode() {
