@@ -32,10 +32,6 @@ module.exports = class RedLightGreenLight {
     this.doneMovingBot = this.doneMovingBot.bind(this);
   }
 
-  setMode(mode) {
-    this.mode = mode;
-  }
-
   update(delta) {
       if(this.greenLight && Date.now() - this.goTime >= 3000 && Math.random() >= 0.99) {
         this.greenLight = false;
