@@ -17,7 +17,7 @@ module.exports = class FreeForAll {
     firebase.database.ref('game/scoreboard/' + playerId).set(scoreboard[playerId]);
   }
 
-  updateScoreboard(scoreboard, playerId, score) {
+  incrementScore(scoreboard, playerId, score) {
     if(!scoreboard[playerId]) {
         scoreboard[playerId] = 0;
     }
