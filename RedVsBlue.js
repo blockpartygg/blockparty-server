@@ -1,8 +1,11 @@
 const firebase = require('firebase-admin');
 
 module.exports = class RedVsBlue {
-  constructor() {
+  constructor(game) {
+    this.game = game;
     this.teams = [];
+
+    this.setupTeams();
   }
 
   setupTeams(teams) {
@@ -37,7 +40,7 @@ module.exports = class RedVsBlue {
         isOnRedTeam = !isOnRedTeam;
         this.teams[team].push(player);
       });
-      firebase.database().ref('game/teams').set(this.teams);
+      this.game.teams = this.teams;
     });
   }
 
@@ -66,7 +69,7 @@ module.exports = class RedVsBlue {
     firebase.database().ref('game/scoreboard/' + teamId).set(teamScore);
   }
 
-  updateScoreboard(scoreboard, playerId, score) {
+  incrementScore(scoreboard, playerId, score) {
     let teamId;
     if(this.teams["redTeamId"].includes(playerId.toString())) {
         teamId = "redTeamId";
