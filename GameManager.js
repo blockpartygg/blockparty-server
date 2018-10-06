@@ -37,7 +37,17 @@ class GameManager {
 
   // write game state to the firebase database
   writeState() {
-    firebase.database.ref('game').update(this.game);
+    firebase.database.ref('game/state').set(this.game.state);
+    firebase.database.ref('game').update({ 
+      startTime: this.game.startTime,
+      endTime: this.game.endTime,
+    });
+    firebase.database.ref('game/round').set(this.game.round);
+    firebase.database.ref('game/minigame').set(this.game.minigame);
+    firebase.database.ref('game/mode').set(this.game.mode);
+    firebase.database.ref('game/teams').set(this.game.teams);
+    firebase.database.ref('game/scoreboard').set(this.game.scoreboard);
+    firebase.database.ref('game/leaderboard').set(this.game.leaderboard);
   }
 
   setPregameCountdownState() {
@@ -90,8 +100,11 @@ class GameManager {
   }
 
   selectMinigame() {
-    //this.game.minigame = this.getRandomMinigame();
-    this.game.minigame =  Config.minigames.blockBlaster;
+    do {
+      this.game.minigame = this.getRandomMinigame();
+    }
+    while(this.game.minigame === Config.minigames.blockio);
+
     switch(this.game.minigame) {
       case Config.minigames.redLightGreenLight:
         this.minigame = new RedLightGreenLight(this);
@@ -99,7 +112,7 @@ class GameManager {
       case Config.minigames.blockBlaster:
         this.minigame = new BlockBlaster(this);  
         break;
-      case Config.minigames.blockIo:
+      case Config.minigames.blockio:
         this.minigame = new Blockio(this);
         break;
     }
@@ -114,17 +127,15 @@ class GameManager {
   }
 
   selectMode() {
-    //this.game.mode = this.getRandomMode();
-    this.game.mode = Config.modes.freeForAll;
+    this.game.mode = this.getRandomMode();
     switch(this.game.mode) {
       case Config.modes.freeForAll:
         this.mode = new FreeForAll();
         break;
       case Config.modes.redVsBlue:
-        this.mode = new RedVsBlue();
+        this.mode = new RedVsBlue(this.game);
         break;
     }
-    // this.minigame.setMode(this.mode);
   }
 
   getRandomMode() {
@@ -186,6 +197,7 @@ class GameManager {
       setTimeout(() => { this.setRoundResultsLeaderboardState(); }, Config.gameStates.roundResultsScoreboard.duration);
     }
     else {
+      console.log('going to celebreation');
       setTimeout(() => { this.setPostgameCelebrationState(); }, Config.gameStates.roundResultsScoreboard.duration);
     }
   }
@@ -200,6 +212,7 @@ class GameManager {
   }
 
   setPostgameCelebrationState() {
+    console.log('setting celebration');
     this.state = Config.gameStates.postgameCelebration.name;
     this.startTime = new Date(Date.now());
     this.endTime = new Date(Date.now() + Config.gameStates.postgameCelebration.duration);
@@ -231,32 +244,32 @@ Config = {
   gameStates: {
     pregameCountdown: {
       name: "pregameCountdown",
-      // duration: 60000
-      duration: 1000
+      duration: 60000
+      // duration: 1000
     },
     pregameTitle: {
       name: "pregameTitle",
-      // duration: 5000,
-      duration: 1000
+      duration: 5000,
+      // duration: 1000
     },
     pregameIntroduction: {
       name: "pregameIntroduction",
-      // duration: 10000,
-      duration: 1000
+      duration: 10000,
+      // duration: 1000
     },
     roundIntroduction: {
       name: "roundIntroduction",
-      // duration: 5000,
-      duration: 1000
+      duration: 5000,
+      // duration: 1000
     },
     roundInstructions: {
       name: "roundInstructions",
-      // duration: 10000,
-      duration: 1000
+      duration: 10000,
+      // duration: 1000
     },
     minigameStart: {
       name: "minigameStart",
-      duration: 1000
+      duration: 3000
       // duration: 1000
     },
     minigamePlay: {
@@ -266,28 +279,28 @@ Config = {
     },
     minigameEnd: {
       name: "minigameEnd",
-      duration: 1000
+      duration: 3000
       // duration: 1000
     },
     roundResultsScoreboard: {
       name: "roundResultsScoreboard",
-      // duration: 10000
-      duration: 1000
+      duration: 10000
+      // duration: 1000
     },
     roundResultsLeaderboard: {
       name: "roundResultsLeaderboard",
-      // duration: 10000
-      duration: 1000
+      duration: 10000
+      // duration: 1000
     },
     postgameCelebration: {
       name: "postgameCelebration",
-      // duration: 10000
-      duration: 1000
+      duration: 10000
+      // duration: 1000
     },
     postgameRewards: {
       name: "postgameRewards",
-      // duration: 10000
-      duration: 1000
+      duration: 10000
+      // duration: 1000
     }
   },
   minigames: {
@@ -299,7 +312,7 @@ Config = {
       name: "Block Blaster",
       instructions: "Tap blocks to score points. Be fast! Other players are gunning for the same blocks.",
     },
-    blockIo: {
+    blockio: {
       name: "Block.io",
       instructions: "Eat the smaller blocks while avoiding the bigger ones."
     },

@@ -2,14 +2,24 @@ const socketManager = require('./SocketManager');
 
 module.exports = class BlockBlaster {
   constructor(game) {
-      this.game = game;
-      this.blocks = [];
+    this.game = game;
+    this.blocks = [];
 
-      socketManager.server.on('minigames/blockBlaster/block_changed', (blockId, playerId) => {
-        this.blocks[blockId].playerId = playerId;
-        this.game.mode.incrementScore(this.game.game.scoreboard, playerId, this.blocks[blockId].value);
-        socketManager.server.emit('minigames/blockBlaster/block_removed', blockId, this.blocks[blockId]);
+    const socketKeys = Object.keys(socketManager.sockets);
+    socketKeys.forEach(key => {
+      const socket = socketManager.sockets[key];
+      socket.on('minigames/blockBlaster/blocks_get', () => {
+        socket.emit('minigames/blockBlaster/blocks', this.blocks);
+      }); // I don't think this currently works
+      socket.on('minigames/blockBlaster/block_changed', (blockId, playerId) => {
+        if(this.blocks[blockId]) {
+          this.blocks[blockId].playerId = playerId;
+          this.game.mode.incrementScore(this.game.game.scoreboard, playerId, this.blocks[blockId].value);
+          socketManager.server.emit('minigames/blockBlaster/block_removed', blockId, this.blocks[blockId]);
+          this.blocks.splice(blockId, 1);
+        }
       });
+    });
   }
 
   update() {
@@ -29,7 +39,6 @@ module.exports = class BlockBlaster {
       block.rotation.y = Math.random() * 2 * Math.PI;
       block.rotation.z = Math.random() * 2 * Math.PI;
       block.value = Math.floor(Math.random() * 10) + 1;
-
       this.blocks.push(block);
       const blockId = this.blocks.length - 1;
       this.blocks[blockId].id = blockId;
@@ -52,5 +61,7 @@ module.exports = class BlockBlaster {
     }
   }
 
-  shutdown() {}
+  shutdown() {
+    this.blocks = [];
+  }
 }

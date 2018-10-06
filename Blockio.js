@@ -1,128 +1,142 @@
 const firebase = require('firebase-admin');
 
 module.exports = class Blockio {
-  constructor(game) {
-    this.game = game;
+  constructor(gameManager) {
+    this.gameManager = gameManager;
     this.food = [];
-    this.bots = [];
+    this.nextFoodId = 0;
+    this.players = [];
 
-    firebase.database().ref('minigame/blockio/food').remove();
+    socketManager.server.on('connection', socket => {
+      socket.on('minigames/blockio/getFood', callback => {
+        console.log('get food request');
+        callback(this.food);
+      });
+    });
+    // for(let botPlayerId = 0; botPlayerId < 1; botPlayerId++) {
+    //   this.players[botPlayerId] = {
+    //     positionX: Math.random() * 10 - 5,
+    //     positionY: Math.random() * 10 - 5,
+    //     velocityX: 0,
+    //     velocityY: 0,
+    //     accelerationX: 0,
+    //     accelerationY: 0,
+    //     speed: 5,
+    //     targetFoodId: -1
+    //   }
+    //   socketManager.server.emit('minigames/blockio/setPlayer', botPlayerId, this.players[botPlayerId]);
+    // }
 
-    for(let bot = 0; bot < 10; bot++) {
-      this.bots[bot] = {
-        positionX: Math.random() * 10 - 5,
-        positionY: Math.random() * 10 - 5,
-        velocityX: 0,
-        velocityY: 0,
-        accelerationX: 0,
-        accelerationY: 0,
-        speed: 1,
-        targetFoodId: -1
-      }
-      firebase.database().ref('minigame/blockio/players/' + bot).set(this.bots[bot]);
-    }
-  }
-
-  setMode(mode) {
-    this.mode = mode;
-  }
-
-  logState() {
-    // console.log('redLightGreenLight: { greenLight:', this.greenLight,
-    //   ', goTime:', this.goTime,
-    //   ', stopTime:', this.stopTime,
-    //   '}'
-    // );
-  }
-
-  handleCommandAdded(snapshot) {
-    let command = snapshot.val();
-
-    let i = this.food.findIndex(food => food.id === command.foodId);
-    if(i !== -1) {
-      let foodId = this.food[i].id;
-      this.food.splice(i, 1);
-      firebase.database().ref('minigame/blockio/food/' + foodId).remove();
-      this.game.mode.updateScoreboard(this.game.game.scoreboard, command.playerId, 1);
-    }
+    const socketIds = Object.keys(socketManager.sockets);
+    socketIds.forEach(socketId => {
+      const socket = socketManager.sockets[socketId];
+      // socket.on('minigames/blockio/setPlayer', (playerId, player) => {
+      //   this.players[playerId] = player;
+      // });
+      socket.on('minigames/blockio/getFood', callback => {
+        console.log('get food request');
+        callback(this.food);
+      });
+      socket.on('minigames/blockio/eatFood', (foodId, playerId) => {
+        console.log('eating food ' + foodId + ' ' + playerId);
+        if(this.food[foodId]) {
+          this.food[foodId].playerId = playerId;
+          this.gameManager.mode.incrementScore(this.gameManager.game.scoreboard, playerId, 1);
+          socketManager.server.emit('minigames/blockio/removeFood', foodId);
+          this.food[foodId] = null;
+        }
+      });
+    });
   }
 
   update(delta) {
-    if(this.food.length < 10) {
+    const length = this.food.reduce(x => x + 1, 0);
+    if(length < 1) {
       let food = {};
+      food.active = true;
       food.position = {};
       food.position.x = Math.random() * 10 - 5;
       food.position.y = Math.random() * 10 - 5;
-      
-      this.food.push(food);
-      let key = firebase.database().ref('minigame/blockio/food').push(this.food[this.food.length - 1]).key;
-      this.food[this.food.length - 1].id = key;
+      const foodId = this.nextFoodId++;
+      this.food[foodId] = food;
+      this.food[foodId].id = foodId;
+      socketManager.server.emit('minigames/blockio/addFood', foodId, this.food[foodId]);
     }
-      this.updateBots(delta);
+    // this.updateBots(delta);
   }
 
   updateBots(delta) {
     delta /= 1000;
 
-    for(let i = 0; i < 10; i++) {
-      if(this.bots[i].targetFoodId === -1) {
+    for(let botPlayerId = 0; botPlayerId < 1; botPlayerId++) {
+      if(this.players[botPlayerId].targetFoodId === -1) {
         let closestFoodDistanceSquared = 200;
         let closestFoodId;
         this.food.forEach(food => {
-          let distanceSquared = this.distanceSquared(this.bots[i].positionX, this.bots[i].positionY, food.position.x, food.position.y);
-          if(distanceSquared < closestFoodDistanceSquared) {
-            closestFoodId = food.id;
-            closestFoodDistanceSquared = distanceSquared;
+          if(food) {
+            let distanceSquared = this.distanceSquared(this.players[botPlayerId].positionX, this.players[botPlayerId].positionY, food.position.x, food.position.y);
+            if(distanceSquared < closestFoodDistanceSquared) {
+              closestFoodId = food.id;
+              closestFoodDistanceSquared = distanceSquared;
+            }
           }
         });
-        this.bots[i].targetFoodId = closestFoodId;
+        this.players[botPlayerId].targetFoodId = closestFoodId;
       }
 
-      if(this.bots[i].targetFoodId !== -1) {
-        let food = this.food.find(f => f.id === this.bots[i].targetFoodId);
-        if(food !== undefined) {
-          let normalizedDeltaX = (food.position.x - this.bots[i].positionX) / Math.sqrt(this.distanceSquared(food.position.x, this.bots[i].positionX, food.position.y, this.bots[i].positionY));
-          let normalizedDeltaY = (food.position.y - this.bots[i].positionY) / Math.sqrt(this.distanceSquared(food.position.x, this.bots[i].positionX, food.position.y, this.bots[i].positionY));
-          this.bots[i].velocityX += normalizedDeltaX * this.bots[i].speed * delta;
-          this.bots[i].velocityY += normalizedDeltaY * this.bots[i].speed * delta;
-        }
-        else {
-          this.bots[i].targetFoodId = -1;
+      if(this.players[botPlayerId].targetFoodId !== -1) {
+        const length = this.food.reduce(x => x + 1, 0);
+        if(length > 0) {
+          let food = this.food.find(f => f && f.id === this.players[botPlayerId].targetFoodId);
+          if(food !== undefined) {
+            let normalizedDeltaX = (food.position.x - this.players[botPlayerId].positionX) / Math.sqrt(this.distanceSquared(food.position.x, this.players[botPlayerId].positionX, food.position.y, this.players[botPlayerId].positionY));
+            let normalizedDeltaY = (food.position.y - this.players[botPlayerId].positionY) / Math.sqrt(this.distanceSquared(food.position.x, this.players[botPlayerId].positionX, food.position.y, this.players[botPlayerId].positionY));
+            this.players[botPlayerId].velocityX += normalizedDeltaX * this.players[botPlayerId].speed * delta;
+            this.players[botPlayerId].velocityY += normalizedDeltaY * this.players[botPlayerId].speed * delta;
+          }
+          else {
+            this.players[botPlayerId].targetFoodId = -1;
+          }
         }
       }
       
-      this.bots[i].velocityX *= 0.95;
-      this.bots[i].velocityY *= 0.95;
-      this.bots[i].positionX += this.bots[i].velocityX * delta;
-      this.bots[i].positionY += this.bots[i].velocityY * delta;
-      if(this.bots[i].positionX <= -5) {
-        this.bots[i].positionX = -5;
+      this.players[botPlayerId].velocityX *= 0.95;
+      this.players[botPlayerId].velocityY *= 0.95;
+      this.players[botPlayerId].positionX += this.players[botPlayerId].velocityX * delta;
+      this.players[botPlayerId].positionY += this.players[botPlayerId].velocityY * delta;
+      if(this.players[botPlayerId].positionX <= -5) {
+        this.players[botPlayerId].positionX = -5;
       }
-      if(this.bots[i].positionX >= 5) {
-        this.bots[i].positionX = 5;
+      if(this.players[botPlayerId].positionX >= 5) {
+        this.players[botPlayerId].positionX = 5;
       }
-      if(this.bots[i].positionY <= -5) {
-        this.bots[i].positionY = -5;
+      if(this.players[botPlayerId].positionY <= -5) {
+        this.players[botPlayerId].positionY = -5;
       }
-      if(this.bots[i].positionY >= 5) {
-        this.bots[i].positionY = 5;
+      if(this.players[botPlayerId].positionY >= 5) {
+        this.players[botPlayerId].positionY = 5;
       }
 
-      for(var key in this.food) {
-        let food = this.food[key];
-        let deltaX = this.bots[i].positionX - food.position.x;
-        let deltaY = this.bots[i].positionY - food.position.y;
-        let distance = deltaX * deltaX + deltaY * deltaY;
-        if(distance < 1) {
-          let foodId = food.id;
-          firebase.database().ref('game/commands').push({
-              playerId: i,
-              foodId: foodId
-          });
+      const foodIds = Object.keys(this.food);
+      foodIds.forEach(foodId => {
+        const food = this.food[foodId];
+        if(food) {
+          let deltaX = this.players[botPlayerId].positionX - food.position.x;
+          let deltaY = this.players[botPlayerId].positionY - food.position.y;
+          let distance = deltaX * deltaX + deltaY * deltaY;
+          if(distance < 1 && food.active) {
+            if(this.food[foodId]) {
+              this.food[foodId].active = false;
+              this.food[foodId].playerId = botPlayerId;
+              this.gameManager.mode.incrementScore(this.gameManager.game.scoreboard, botPlayerId, 1);
+              this.food[foodId] = null;
+              socketManager.server.emit('minigames/blockio/removeFood', foodId);
+            }
+          }
         }
-      }
-
-      firebase.database().ref('minigame/blockio/players/' + i).set(this.bots[i]);
+      });
+      
+      socketManager.server.emit('minigames/blockio/setPlayer', botPlayerId, this.players[botPlayerId]);
     }
   }
 
