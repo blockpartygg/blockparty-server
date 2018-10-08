@@ -213,18 +213,18 @@ class GameManager {
 
   setPostgameCelebrationState() {
     console.log('setting celebration');
-    this.state = Config.gameStates.postgameCelebration.name;
-    this.startTime = new Date(Date.now());
-    this.endTime = new Date(Date.now() + Config.gameStates.postgameCelebration.duration);
+    this.game.state = Config.gameStates.postgameCelebration.name;
+    this.game.startTime = new Date(Date.now());
+    this.game.endTime = new Date(Date.now() + Config.gameStates.postgameCelebration.duration);
     this.logState();
     this.writeState();
     setTimeout(() => { this.setPostgameRewardsState(); }, Config.gameStates.postgameCelebration.duration);
   }
 
   setPostgameRewardsState() {
-    this.state = Config.gameStates.postgameRewards.name;
-    this.startTime = new Date(Date.now());
-    this.endTime = new Date(Date.now() + Config.gameStates.postgameRewards.duration);
+    this.game.state = Config.gameStates.postgameRewards.name;
+    this.game.startTime = new Date(Date.now());
+    this.game.endTime = new Date(Date.now() + Config.gameStates.postgameRewards.duration);
     this.logState();
     this.writeState();
     firebase.database.ref('players').once('value', snapshot => {
