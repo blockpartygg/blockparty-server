@@ -233,7 +233,7 @@ class GameManager {
         if(!player.val().playing || player.val().isGuest || player.key === "redTeamId" || player.key === "blueTeamId" || player.key === "0" || player.key === "1" || player.key === "2" || player.key === "3" || player.key === "4" || player.key === "5" || player.key === "6" || player.key === "7" || player.key === "8" || player.key === "9") {
           return;
         }
-        const currentCurrency = player.val().currency;
+        const currentCurrency = player.val().currency || 0;
         player.ref.update({ currency: currentCurrency + 100 });
       });
     });
