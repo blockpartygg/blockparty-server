@@ -104,6 +104,7 @@ class GameManager {
       this.game.minigame = this.getRandomMinigame();
     }
     while(this.game.minigame === Config.minigames.blockio);
+    // this.game.minigame = Config.minigames.redLightGreenLight;
 
     switch(this.game.minigame) {
       case Config.minigames.redLightGreenLight:
