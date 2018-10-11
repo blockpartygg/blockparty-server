@@ -100,11 +100,7 @@ class GameManager {
   }
 
   selectMinigame() {
-    do {
-      this.game.minigame = this.getRandomMinigame();
-    }
-    while(this.game.minigame === Config.minigames.blockio);
-    // this.game.minigame = Config.minigames.redLightGreenLight;
+    this.game.minigame = this.getRandomMinigame();
 
     switch(this.game.minigame) {
       case Config.minigames.redLightGreenLight:
@@ -129,6 +125,7 @@ class GameManager {
 
   selectMode() {
     this.game.mode = this.getRandomMode();
+
     switch(this.game.mode) {
       case Config.modes.freeForAll:
         this.mode = new FreeForAll();
@@ -198,7 +195,6 @@ class GameManager {
       setTimeout(() => { this.setRoundResultsLeaderboardState(); }, Config.gameStates.roundResultsScoreboard.duration);
     }
     else {
-      console.log('going to celebreation');
       setTimeout(() => { this.setPostgameCelebrationState(); }, Config.gameStates.roundResultsScoreboard.duration);
     }
   }
@@ -213,7 +209,6 @@ class GameManager {
   }
 
   setPostgameCelebrationState() {
-    console.log('setting celebration');
     this.game.state = Config.gameStates.postgameCelebration.name;
     this.game.startTime = new Date(Date.now());
     this.game.endTime = new Date(Date.now() + Config.gameStates.postgameCelebration.duration);
@@ -315,13 +310,13 @@ Config = {
     },
     blockio: {
       name: "Block.io",
-      instructions: "Eat the smaller blocks while avoiding the bigger ones."
+      instructions: "Eat all the food you can to score as many points as possible."
     },
   },
   modes: {
     freeForAll: {
       name: "Free For All",
-      instructions: "It’s every player for themself. Leaderboard points are rewarded based on your performance compared to other competitors. Score as many points as you can.",
+      instructions: "It’s every player for themself.",
     },
     redVsBlue: {
       name: "Red Vs Blue",
