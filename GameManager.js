@@ -295,7 +295,7 @@ Config = {
     },
     postgameRewards: {
       name: "postgameRewards",
-      duration: 10000
+      duration: 60000
       // duration: 1000
     }
   },
