@@ -19,6 +19,10 @@ class SocketManager {
             console.log("SocketManager: Event: 'connect': socket.id=" + socket.id);
             this._sockets[socket.id] = socket;
         });
+
+        setInterval(() => {
+            http.get('http://blockparty-server.herokuapp.com');
+        }, 300000);
     }
 
     get server() {

@@ -1,13 +1,12 @@
-const firebase = require('./Firebase');
 const socketManager = require('./SocketManager');
-const playerManager = require('./PlayerManager');
 
 module.exports = class RedLightGreenLight {
-  constructor(game) {
-    this.game = game;
+  constructor(gameManager) {
+    this.gameManager = gameManager;
     
     this.setupPlayers();
     this.setupGreenLight();
+    this.setupPlayerEliminator();
     this.setupPlayerListeners();
     this.setupStateEmitter();
 
@@ -19,6 +18,7 @@ module.exports = class RedLightGreenLight {
     for(let playerId = 0; playerId < 10; playerId++) {
       this.players["bot" + playerId] = {
         id: "bot" + playerId,
+        active: true,
         positionX: playerId,
         positionZ: 0,
         moving: false,
@@ -33,6 +33,11 @@ module.exports = class RedLightGreenLight {
     this.lastTime = Date.now();
   }
 
+  setupPlayerEliminator() {
+    this.playerEliminationCountdown = 5000;
+    this.playerToEliminate = null;
+  }
+
   setupPlayerListeners() {
     this.nextPositionX = 10;
     const socketKeys = Object.keys(socketManager.sockets);
@@ -41,6 +46,7 @@ module.exports = class RedLightGreenLight {
       socket.on('redLightGreenLight/joinGame', playerId => {
         this.players[playerId] = {
           id: playerId,
+          active: true,
           positionX: this.nextPositionX++,
           positionZ: 0,
           moving: false
@@ -51,7 +57,7 @@ module.exports = class RedLightGreenLight {
         if(this.players[playerId]) {
           this.players[playerId].positionZ = playerObject.positionZ;
         }
-        this.game.mode.setScore(this.game.game.scoreboard, playerId, Math.floor(playerObject.positionZ));
+        this.gameManager.mode.setScore(this.gameManager.game.scoreboard, playerId, Math.floor(playerObject.positionZ));
       });
     });
   }
@@ -61,12 +67,13 @@ module.exports = class RedLightGreenLight {
   }
 
   sendState() {
-    socketManager.server.emit('redLightGreenLight/state', { players: this.players, greenLight: this.greenLight });
+    socketManager.server.emit('redLightGreenLight/state', { players: this.players, greenLight: this.greenLight, playerEliminationCountdown: this.playerEliminationCountdown, playerToEliminate: this.playerToEliminate });
   }
 
-  update() {
+  update(timeElapsed) {
     this.updateGreenLight();  
     this.updateBots();
+    this.updatePlayerEliminator(timeElapsed);
   }
 
   updateGreenLight() {
@@ -83,17 +90,17 @@ module.exports = class RedLightGreenLight {
 
   updateBots() {
     for(let playerId = 0; playerId < 10; playerId++) {
-      if(!this.players["bot" + playerId].moving) {
+      if(this.players["bot" + playerId].active && !this.players["bot" + playerId].moving) {
         if(this.greenLight) {
-          if(Math.random() >= 0.925) {
+          if(Math.random() >= 0.85) {
             this.players["bot" + playerId].moving = true;
-            setTimeout(this.doneMovingBot, 151, playerId, 1);
+            setTimeout(this.doneMovingBot, 100, playerId, 1);
           }
         }
         else {
           if(Math.random() >= 0.99) {
             this.players["bot" + playerId].moving = true;
-            setTimeout(this.doneMovingBot, 151, playerId, -2);
+            setTimeout(this.doneMovingBot, 100, playerId, -2);
           }
         }
       }
@@ -102,8 +109,30 @@ module.exports = class RedLightGreenLight {
 
   doneMovingBot(playerId, distance) {
     this.players["bot" + playerId].positionZ += distance;
-    this.game.mode.setScore(this.game.game.scoreboard, "bot" + playerId, Math.floor(this.players["bot" + playerId].positionZ));
+    this.gameManager.mode.setScore(this.gameManager.game.scoreboard, "bot" + playerId, Math.floor(this.players["bot" + playerId].positionZ));
     this.players["bot" + playerId].moving = false;
+  }
+
+  updatePlayerEliminator(timeElapsed) {
+    const scoreboard = this.gameManager.game.scoreboard;
+    let lowestScorePlayerId = -1;
+    let lowestScore = 100000;
+    const playerIds = Object.keys(scoreboard);
+    playerIds.forEach(playerId => {
+      if(this.players[playerId] && this.players[playerId].active && scoreboard[playerId] < lowestScore) {
+        lowestScore = scoreboard[playerId];
+        lowestScorePlayerId = playerId;
+      }
+    });
+    if(lowestScorePlayerId !== -1) {
+      this.playerToEliminate = lowestScorePlayerId;
+      this.playerEliminationCountdown -= timeElapsed;
+      if(this.playerEliminationCountdown <= 0) {
+        this.players[lowestScorePlayerId].active = false;
+        socketManager.server.emit('redLightGreenLight/eliminatePlayer', lowestScorePlayerId);
+        this.playerEliminationCountdown = 5000;
+      }
+    }
   }
 
   shutdown() {

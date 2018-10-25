@@ -26,7 +26,7 @@ class GameManager {
     this.minigameUpdateTimer = 0;
 
     firebase.database.ref('game').remove();
-
+    
     this.setPregameCountdownState();
   }
 
@@ -74,16 +74,7 @@ class GameManager {
     this.game.endTime = new Date(Date.now() + Config.gameStates.pregameTitle.duration)
     this.logState();
     this.writeState();
-    setTimeout(() => { this.setPregameIntroductionState(); }, Config.gameStates.pregameTitle.duration);
-  }
-
-  setPregameIntroductionState() {
-    this.game.state = Config.gameStates.pregameIntroduction.name;
-    this.game.startTime = new Date(Date.now());
-    this.game.endTime = new Date(Date.now() + Config.gameStates.pregameIntroduction.duration);
-    this.logState();
-    this.writeState();
-    setTimeout(() => { this.setRoundIntroductionState(); }, Config.gameStates.pregameIntroduction.duration);
+    setTimeout(() => { this.setRoundIntroductionState(); }, Config.gameStates.pregameTitle.duration);
   }
 
   setRoundIntroductionState() {
@@ -96,7 +87,7 @@ class GameManager {
     this.selectMode();
     this.logState();
     this.writeState();
-    setTimeout(() => { this.setRoundInstructionsState(); }, Config.gameStates.roundIntroduction.duration);
+    setTimeout(() => { this.setMinigameStartState(); }, Config.gameStates.roundIntroduction.duration);
   }
 
   selectMinigame() {
@@ -142,15 +133,6 @@ class GameManager {
     const modeKey = modeKeys[modeIndex];
     const mode = Config.modes[modeKey];
     return mode
-  }
-
-  setRoundInstructionsState() {
-    this.game.state = Config.gameStates.roundInstructions.name;
-    this.game.startTime = new Date(Date.now());
-    this.game.endTime = new Date(Date.now() + Config.gameStates.roundInstructions.duration);
-    this.logState();
-    this.writeState();
-    setTimeout(() => { this.setMinigameStartState(); }, Config.gameStates.roundInstructions.duration);
   }
 
   setMinigameStartState() {
@@ -248,24 +230,14 @@ Config = {
       duration: 5000,
       // duration: 1000
     },
-    pregameIntroduction: {
-      name: "pregameIntroduction",
-      duration: 10000,
-      // duration: 1000
-    },
     roundIntroduction: {
       name: "roundIntroduction",
-      duration: 5000,
-      // duration: 1000
-    },
-    roundInstructions: {
-      name: "roundInstructions",
       duration: 10000,
       // duration: 1000
     },
     minigameStart: {
       name: "minigameStart",
-      duration: 3000
+      duration: 5000
       // duration: 1000
     },
     minigamePlay: {
@@ -275,7 +247,7 @@ Config = {
     },
     minigameEnd: {
       name: "minigameEnd",
-      duration: 3000
+      duration: 5000
       // duration: 1000
     },
     roundResultsScoreboard: {
@@ -301,24 +273,29 @@ Config = {
   },
   minigames: {
     redLightGreenLight: {
+      id: "redLightGreenLight",
       name: "Red Light Green Light",
       instructions: "Run as far as possible by tapping, but stop running when you see the Red Light, which causes you to move backward.",
     },
     blockBlaster: {
+      id: "blockBlaster",
       name: "Block Blaster",
       instructions: "Tap blocks to score points. Be fast! Other players are gunning for the same blocks.",
     },
     blockio: {
+      id: "blockio",
       name: "Block.io",
       instructions: "Eat all the food you can to score as many points as possible."
     },
   },
   modes: {
     freeForAll: {
+      id: "freeForAll",
       name: "Free For All",
       instructions: "It’s every player for themself.",
     },
     redVsBlue: {
+      id: "redVsBlue",
       name: "Red Vs Blue",
       instructions: "It's red against blue.",
     },

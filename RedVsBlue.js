@@ -3,7 +3,6 @@ const firebase = require('firebase-admin');
 module.exports = class RedVsBlue {
   constructor(game) {
     this.game = game;
-    this.teams = [];
 
     this.setupTeams();
   }
@@ -38,7 +37,7 @@ module.exports = class RedVsBlue {
       players.forEach(player => {
         let team = isOnRedTeam ? "redTeamId" : "blueTeamId";
         isOnRedTeam = !isOnRedTeam;
-        this.teams[team].push(player);
+        this.teams[team][player] = true;
       });
       this.game.teams = this.teams;
     });
@@ -51,29 +50,29 @@ module.exports = class RedVsBlue {
     scoreboard[playerId] = score;
 
     let teamId;
-    if(this.teams["redTeamId"].includes(playerId.toString())) {
+    if(this.teams["redTeamId"][playerId]) {
         teamId = "redTeamId";
-    } else if(this.teams["blueTeamId"].includes(playerId.toString())) {
+    } else if(this.teams["blueTeamId"][playerId]) {
         teamId = "blueTeamId";
     }
 
     let teamScore = 0;
-    if(this.teams[teamId]) {
-      this.teams[teamId].forEach(id => {
-        if(scoreboard[id]) {
-          teamScore += scoreboard[id];
-        }
-      });
-    }
+    const playerIds = Object.keys(this.teams[teamId]);
+    playerIds.forEach(playerId => {
+      if(scoreboard[playerId]) {
+        teamScore += scoreboard[playerId];
+      }
+    });
+    scoreboard[teamId] = teamScore;
     
     firebase.database().ref('game/scoreboard/' + teamId).set(teamScore);
   }
 
   incrementScore(scoreboard, playerId, score) {
     let teamId;
-    if(this.teams["redTeamId"].includes(playerId.toString())) {
+    if(this.teams["redTeamId"][playerId]) {
         teamId = "redTeamId";
-    } else if(this.teams["blueTeamId"].includes(playerId.toString())) {
+    } else if(this.teams["blueTeamId"][playerId]) {
         teamId = "blueTeamId";
     }
 
@@ -81,28 +80,31 @@ module.exports = class RedVsBlue {
       scoreboard[teamId] = 0;
     }
     scoreboard[teamId] += score;
-    firebase.database().ref('game/scoreboard/' + teamId).set(scoreboard[teamId]);
+    firebase.database().ref('game/scoreboard/' + teamId).set(this.scoreboard[teamId]);
   }
 
   updateLeaderboard(leaderboard) {
     firebase.database().ref('game/scoreboard').orderByValue().limitToLast(1).once('value', snapshot => {
       let winningTeamId;
       if(snapshot.val() && snapshot.val().redTeamId) {
-          winningTeamId = "redTeamId";
+        winningTeamId = "redTeamId";
       } else {
-          winningTeamId = "blueTeamId";
+        winningTeamId = "blueTeamId";
       }
-      let playerCount = this.teams["redTeamId"].length + this.teams["blueTeamId"].length;
+      const redTeamCount = Object.keys(this.teams["redTeamId"]).length;
+      const blueTeamCount = Object.keys(this.teams["blueTeamId"]).length
+      const playerCount = redTeamCount + blueTeamCount;
       let totalPoints = playerCount * (playerCount + 1) / 2;
-      let pointsToSplit = Math.floor(totalPoints / this.teams[winningTeamId].length);
-      this.teams[winningTeamId].forEach(player => {
-        if(player === "redTeamId" || player === "blueTeamId") {
+      let pointsToSplit = Math.floor(totalPoints / (winningTeamId === "redTeamId" ? redTeamCount : blueTeamCount));
+      const playerIds = Object.keys(this.teams[winningTeamId]);
+      playerIds.forEach(playerId => {
+        if(playerId === "redTeamId" || playerId === "blueTeamId") {
             return;
         }
-        if(!leaderboard[player]) {
-            leaderboard[player] = 0;
+        if(!leaderboard[playerId]) {
+            leaderboard[playerId] = 0;
         } 
-        leaderboard[player] += pointsToSplit;
+        leaderboard[playerId] += pointsToSplit;
       });
       firebase.database().ref('game/leaderboard').set(leaderboard);
     });
