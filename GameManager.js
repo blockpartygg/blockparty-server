@@ -91,7 +91,8 @@ class GameManager {
   }
 
   selectMinigame() {
-    this.game.minigame = this.getRandomMinigame();
+    // this.game.minigame = this.getRandomMinigame();
+    this.game.minigame = Config.minigames.redLightGreenLight;
 
     switch(this.game.minigame) {
       case Config.minigames.redLightGreenLight:
