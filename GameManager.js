@@ -1,5 +1,8 @@
 const firebase = require('./Firebase');
 const RedLightGreenLight = require('./RedLightGreenLight');
+const FastestFinger = require('./FastestFinger');
+const BlockParty = require('./BlockParty');
+const BlockChase = require('./BlockChase');
 const BlockBlaster = require('./BlockBlaster');
 const Blockio = require('./Blockio');
 const FreeForAll = require('./FreeForAll');
@@ -92,11 +95,20 @@ class GameManager {
 
   selectMinigame() {
     // this.game.minigame = this.getRandomMinigame();
-    this.game.minigame = Config.minigames.redLightGreenLight;
+    this.game.minigame = Config.minigames.blockParty;
 
     switch(this.game.minigame) {
       case Config.minigames.redLightGreenLight:
         this.minigame = new RedLightGreenLight(this);
+        break;
+      case Config.minigames.fastestFinger:
+        this.minigame = new FastestFinger(this);
+        break;
+      case Config.minigames.blockParty:
+        this.minigame = new BlockParty(this);
+        break;
+      case Config.minigames.blockChase:
+        this.minigame = new BlockChase(this);
         break;
       case Config.minigames.blockBlaster:
         this.minigame = new BlockBlaster(this);  
@@ -238,17 +250,17 @@ Config = {
     },
     minigameStart: {
       name: "minigameStart",
-      duration: 5000
+      duration: 3000
       // duration: 1000
     },
     minigamePlay: {
       name: "minigamePlay",
-      duration: 30000
+      duration: 120000
       // duration: 1000
     },
     minigameEnd: {
       name: "minigameEnd",
-      duration: 5000
+      duration: 3000
       // duration: 1000
     },
     roundResultsScoreboard: {
@@ -277,6 +289,21 @@ Config = {
       id: "redLightGreenLight",
       name: "Red Light Green Light",
       instructions: "Run as far as possible by tapping, but stop running when you see the Red Light, which causes you to move backward.",
+    },
+    fastestFinger: {
+      id: "fastestFinger",
+      name: "Fastest Finger",
+      instructions: "Cover the most distance by tapping to move forward. The player who moves the farthest wins."
+    },
+    blockParty: {
+      id: "blockParty",
+      name: "Block Party",
+      instructions: "Drag blocks left and right to match 3 of the same colored blocks horizontally or vertically, causing them to disappear and the ones above to fall."
+    },
+    blockChase: {
+      id: "blockChase",
+      name: "Block Chase",
+      instructions: "",
     },
     blockBlaster: {
       id: "blockBlaster",

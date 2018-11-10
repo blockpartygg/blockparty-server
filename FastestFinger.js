@@ -1,58 +1,83 @@
-const firebase = require('firebase-admin');
+const socketManager = require('./SocketManager');
 
 module.exports = class FastestFinger {
-  constructor(mode, scoreboard) {
-    this.penalty = false;
-    this.goTime = Date.now();
-    this.stopTime = Date.now();
-    this.mode = mode;
-    this.scoreboard = scoreboard;
+  constructor(gameManager) {
+    this.gameManager = gameManager;
+
+    this.setupPlayers();
+    this.setupPlayerListeners();
+    this.setupStateEmitter();
   }
 
-  logState() {
-    console.log('fastestFinger: { penalty:', this.penalty,
-      ', goTime:', this.goTime,
-      ', stopTime:', this.stopTime,
-      '}'
-    );
-  }
-
-  handleCommandAdded(snapshot) {
-    let command = snapshot.val();
-    let score;
-    if(!this.penalty) {
-      score = 1000;
+  setupPlayers() {
+    this.players = {};
+    this.botCount = 10;
+    this.botMoveProbability = 0.85;
+    for(let playerId = 0; playerId < this.botCount; playerId++) {
+      this.spawnPlayer("bot" + playerId, playerId);
     }
-    else {
-      score = -3000;
-    }
-    this.mode.updateScoreboard(this.scoreboard, command.playerId, score);
   }
 
-  update() {
-      if(this.penalty && Date.now() - this.goTime >= 3000 && Math.random() >= 0.99) {
-        this.penalty = false;
-        firebase.database().ref('fastestFinger/penalty').set(this.penalty);
-        this.stopTime = Date.now();
-      }
-      
-      if(!this.penalty && Date.now() - this.stopTime >= 3000 && Math.random() >= 0.99) {
-        this.penalty = true;
-        firebase.database().ref('fastestFinger/penalty').set(this.penalty);
-        this.goTime = Date.now();
-      }
+  spawnPlayer(playerId, x) {
+    this.players[playerId] = {
+      id: playerId,
+      active: true,
+      position: {
+        x: x,
+        z: 0,
+      },
+      moving: false
+    };
+  }
 
-      this.updateBots();
+  setupPlayerListeners() {
+    this.nextPositionX = this.botCount;
+    const socketIds = Object.keys(socketManager.sockets);
+    socketIds.forEach(socketId => {
+      const socket = socketManager.sockets[socketId];
+      socket.on('fastestFinger/joinGame', playerId => {
+        this.spawnPlayer(playerId, this.nextPositionX++);
+      });
+      socket.on('fastestFinger/playerState', (playerId, player) => {
+        const playerObject = JSON.parse(player);
+        if(this.players[playerId]) {
+          this.players[playerId].position = playerObject.position;
+        }
+        this.gameManager.mode.setScore(this.gameManager.game.scoreboard, playerId, Math.floor(playerObject.position.z));
+      });
+    });
+  }
+
+  setupStateEmitter() {
+    this.sendStateInterval = setInterval(() => { this.sendState(); }, 1000 / 60);
+  }
+
+  sendState() {
+    socketManager.server.emit('fastestFinger/state', { players: this.players });
+  }
+
+  update(timeElapsed) {
+    this.updateBots();
   }
 
   updateBots() {
-    for(var i = 0; i < 10; i++) {
-      if(Math.random() >= 0.99) {
-        let playerId = Math.floor(Math.random() * 10);
-        firebase.database().ref('game/commands').push({ playerId: playerId});
+    for(let playerId = 0; playerId < this.botCount; playerId++) {
+      if(this.players["bot" + playerId].active && !this.players["bot" + playerId].moving) {
+        if(Math.random() >= this.botMoveProbability) {
+          this.players["bot" + playerId].moving = true;
+          setTimeout(() => { this.doneMovingBot(playerId); }, 100);
+        }
       }
     }
   }
 
-  shutdown() {}
+  doneMovingBot(playerId) {
+    this.players["bot" + playerId].position.z += 1;
+    this.gameManager.mode.setScore(this.gameManager.game.scoreboard, "bot" + playerId, Math.floor(this.players["bot" + playerId].position.z));
+    this.players["bot" + playerId].moving = false;
+  }
+
+  shutdown() {
+    clearInterval(this.sendStateInterval);
+  }
 }

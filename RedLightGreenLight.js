@@ -9,8 +9,6 @@ module.exports = class RedLightGreenLight {
     this.setupPlayerEliminator();
     this.setupPlayerListeners();
     this.setupStateEmitter();
-
-    this.doneMovingBot = this.doneMovingBot.bind(this);
   }
 
   setupPlayers() {
@@ -94,13 +92,13 @@ module.exports = class RedLightGreenLight {
         if(this.greenLight) {
           if(Math.random() >= 0.85) {
             this.players["bot" + playerId].moving = true;
-            setTimeout(this.doneMovingBot, 100, playerId, 1);
+            setTimeout(() => { this.doneMovingBot(playerId, 1); }, 100);
           }
         }
         else {
           if(Math.random() >= 0.99) {
             this.players["bot" + playerId].moving = true;
-            setTimeout(this.doneMovingBot, 100, playerId, -2);
+            setTimeout(() => { this.doneMovingBot(playerId, -2); }, 100);
           }
         }
       }
