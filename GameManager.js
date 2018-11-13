@@ -128,7 +128,8 @@ class GameManager {
   }
 
   selectMode() {
-    this.game.mode = this.getRandomMode();
+    // this.game.mode = this.getRandomMode();
+    this.game.mode = Config.modes.freeForAll;
 
     switch(this.game.mode) {
       case Config.modes.freeForAll:
@@ -235,18 +236,18 @@ Config = {
   gameStates: {
     pregameCountdown: {
       name: "pregameCountdown",
-      duration: 60000
-      // duration: 1000
+      // duration: 60000
+      duration: 1000
     },
     pregameTitle: {
       name: "pregameTitle",
-      duration: 5000,
-      // duration: 1000
+      // duration: 5000,
+      duration: 1000
     },
     roundIntroduction: {
       name: "roundIntroduction",
-      duration: 10000,
-      // duration: 1000
+      // duration: 10000,
+      duration: 1000
     },
     minigameStart: {
       name: "minigameStart",
@@ -265,23 +266,23 @@ Config = {
     },
     roundResultsScoreboard: {
       name: "roundResultsScoreboard",
-      duration: 10000
-      // duration: 1000
+      // duration: 10000
+      duration: 1000
     },
     roundResultsLeaderboard: {
       name: "roundResultsLeaderboard",
-      duration: 10000
-      // duration: 1000
+      // duration: 10000
+      duration: 1000
     },
     postgameCelebration: {
       name: "postgameCelebration",
-      duration: 10000
-      // duration: 1000
+      // duration: 10000
+      duration: 1000
     },
     postgameRewards: {
       name: "postgameRewards",
-      duration: 60000
-      // duration: 1000
+      // duration: 60000
+      duration: 1000
     }
   },
   minigames: {
