@@ -27,6 +27,7 @@ class GameManager {
     this.minigame = null;
     this.mode = null;
     this.minigameUpdateTimer = 0;
+    this.nextMinigame = Config.minigames.blockPartyTimeAttack;
 
     firebase.database.ref('game').remove();
     
@@ -95,7 +96,9 @@ class GameManager {
 
   selectMinigame() {
     // this.game.minigame = this.getRandomMinigame();
-    this.game.minigame = Config.minigames.blockParty;
+    // this.game.minigame = Config.minigames.blockParty;
+    this.game.minigame = this.nextMinigame;
+    this.nextMinigame = this.nextMinigame == Config.minigames.blockPartyTimeAttack ? Config.minigames.blockPartySurvival : Config.minigames.blockPartyTimeAttack;
 
     switch(this.game.minigame) {
       case Config.minigames.redLightGreenLight:
@@ -105,6 +108,12 @@ class GameManager {
         this.minigame = new FastestFinger(this);
         break;
       case Config.minigames.blockParty:
+        this.minigame = new BlockParty(this);
+        break;
+      case Config.minigames.blockPartyTimeAttack:
+        this.minigame = new BlockParty(this);
+        break;
+      case Config.minigames.blockPartySurvival:
         this.minigame = new BlockParty(this);
         break;
       case Config.minigames.blockChase:
@@ -236,18 +245,18 @@ Config = {
   gameStates: {
     pregameCountdown: {
       name: "pregameCountdown",
-      // duration: 60000
-      duration: 1000
+      duration: 60000
+      // duration: 1000
     },
     pregameTitle: {
       name: "pregameTitle",
-      // duration: 5000,
-      duration: 1000
+      duration: 5000,
+      // duration: 1000
     },
     roundIntroduction: {
       name: "roundIntroduction",
-      // duration: 10000,
-      duration: 1000
+      duration: 10000,
+      // duration: 1000
     },
     minigameStart: {
       name: "minigameStart",
@@ -266,23 +275,23 @@ Config = {
     },
     roundResultsScoreboard: {
       name: "roundResultsScoreboard",
-      // duration: 10000
-      duration: 1000
+      duration: 10000
+      // duration: 1000
     },
     roundResultsLeaderboard: {
       name: "roundResultsLeaderboard",
-      // duration: 10000
-      duration: 1000
+      duration: 10000
+      // duration: 1000
     },
     postgameCelebration: {
       name: "postgameCelebration",
-      // duration: 10000
-      duration: 1000
+      duration: 10000
+      // duration: 1000
     },
     postgameRewards: {
       name: "postgameRewards",
-      // duration: 60000
-      duration: 1000
+      duration: 60000
+      // duration: 1000
     }
   },
   minigames: {
@@ -300,6 +309,16 @@ Config = {
       id: "blockParty",
       name: "Block Party",
       instructions: "Drag blocks left and right to match 3 of the same colored blocks horizontally or vertically, causing them to disappear and the ones above to fall."
+    },
+    blockPartyTimeAttack: {
+      id: "blockPartyTimeAttack",
+      name: "Time Attack",
+      instructions: "Score the most points in two minutes to win."
+    },
+    blockPartySurvival: {
+      id: "blockPartySurvival",
+      name: "Survival",
+      instructions: "Blocks gradually rise from the bottom of the board. Avoid elimination by clearing blocks before they reach the top."
     },
     blockChase: {
       id: "blockChase",

@@ -22,7 +22,6 @@ module.exports = class BlockParty {
             socket.on('blockParty/receiveChain', (playerId, chainStructure) => {
                 const payload = this.calculatePayload(chainStructure);
                 socket.emit('blockParty/sendGarbage', payload);
-                console.log('sent garbage');
             });
         });
     }
@@ -36,6 +35,10 @@ module.exports = class BlockParty {
     }
 
     shutdown() {
-        
+        const socketIds = Object.keys(socketManager.sockets);
+        socketIds.forEach(socketId => {
+            const socket = socketManager.sockets[socketId];
+            socket.removeAllListeners();
+        });
     }
 }
