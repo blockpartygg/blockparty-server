@@ -7,6 +7,16 @@ class ScoreboardManager {
 
     clear() {
         this.scoreboard.items = [];
+        // this.addBotScores();
+    }
+
+    addScore(id, score) {
+        const length = this.scoreboard.items.push({ id: id, score: score });
+        console.log("Added score:");
+        console.log(this.scoreboard.items[length - 1]);
+    }
+
+    addBotScores() {
         this.addScore("Brodsky", Math.floor(Math.random() * 10000));
         this.addScore("Kennychuck", Math.floor(Math.random() * 10000));
         this.addScore("RonSolo", Math.floor(Math.random() * 10000));
@@ -52,12 +62,6 @@ class ScoreboardManager {
         this.addScore("Crono", Math.floor(Math.random() * 10000));
         this.addScore("Cloud", Math.floor(Math.random() * 10000));
         this.addScore("Faker", Math.floor(Math.random() * 10000));
-    }
-
-    addScore(id, score) {
-        const length = this.scoreboard.items.push({ id: id, score: score });
-        console.log("Added score:");
-        console.log(this.scoreboard.items[length - 1]);
     }
 }
 
