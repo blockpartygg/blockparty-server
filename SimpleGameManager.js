@@ -7,7 +7,6 @@ class SimpleGameManager {
       state: null,
       endTime: null,
       mode: null,
-      scoreboard: [],
     };
     this.scoreboardManager = scoreboardManager;
     
@@ -21,8 +20,8 @@ class SimpleGameManager {
 
   setPregameState() {
     this.game.state = Config.states.pregame.id;
-    this.game.mode = this.game.mode == null || this.game.mode == Config.modes.survival ? Config.modes.timeAttack : Config.modes.survival;  
     this.game.endTime = new Date(Date.now() + Config.states.pregame.duration);
+    this.game.mode = this.game.mode == null || this.game.mode == Config.modes.survival ? Config.modes.timeAttack : Config.modes.survival;  
     this.scoreboardManager.clear();
     this.logState();
     setTimeout(() => { this.setInGameState(); }, Config.states.pregame.duration);

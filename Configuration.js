@@ -7,7 +7,6 @@ Configuration = {
       inGame: {
         id: "inGame",
         duration: 120000,
-        // duration: 10000,
       },
       postgame: {
         id: "postgame",
