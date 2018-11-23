@@ -26,6 +26,10 @@ class WebAppManager {
             scoreboardManager.addScore(request.body.id, parseInt(request.body.score));
             response.json({ message: "Score created" });
         });
+
+        this.app.get('/ping', function(request, response) {
+            response.send("pong");
+        });
     }
 }
 

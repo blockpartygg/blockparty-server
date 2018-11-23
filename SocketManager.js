@@ -18,9 +18,9 @@ class SocketManager {
         //     this._sockets[socket.id] = socket;
         // });
 
-        // setInterval(() => {
-        //     http.get('http://blockparty-server.herokuapp.com');
-        // }, 300000);
+        setInterval(() => {
+            http.get('http://blockparty-server.herokuapp.com/ping');
+        }, 300000);
     }
 
     get server() {
