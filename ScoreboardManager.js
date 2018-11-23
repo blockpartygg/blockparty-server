@@ -42,6 +42,16 @@ class ScoreboardManager {
         this.addScore("BlackFriday", Math.floor(Math.random() * 10000));
         this.addScore("Artemis", Math.floor(Math.random() * 10000));
         this.addScore("Parzival", Math.floor(Math.random() * 10000));
+        this.addScore("FightClubAlum", Math.floor(Math.random() * 10000));
+        this.addScore("LeeroyJenkins", Math.floor(Math.random() * 10000));
+        this.addScore("Anorak", Math.floor(Math.random() * 10000));
+        this.addScore("Aech", Math.floor(Math.random() * 10000));
+        this.addScore("Og", Math.floor(Math.random() * 10000));
+        this.addScore("Daito", Math.floor(Math.random() * 10000));
+        this.addScore("Shoto", Math.floor(Math.random() * 10000));
+        this.addScore("Crono", Math.floor(Math.random() * 10000));
+        this.addScore("Cloud", Math.floor(Math.random() * 10000));
+        this.addScore("Faker", Math.floor(Math.random() * 10000));
     }
 
     addScore(id, score) {
