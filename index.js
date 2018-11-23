@@ -1,10 +1,12 @@
-const firebase = require('./Firebase');
 const socketManager = require('./SocketManager');
-const playerManager = require('./PlayerManager');
-const GameManager = require('./GameManager');
+const webAppManager = require('./WebAppManager');
+const GameManager = require('./SimpleGameManager');
+const ScoreboardManager = require('./ScoreboardManager');
 
-firebase.initialize();
-socketManager.initialize();
-playerManager.initialize();
+webAppManager.initialize();
+socketManager.initialize(webAppManager);
 
-let game = new GameManager();
+let scoreboardManager = new ScoreboardManager();
+let gameManager = new GameManager(scoreboardManager);
+
+webAppManager.setupRoutes(gameManager, scoreboardManager);

@@ -1,13 +1,11 @@
-const express = require('express');
 const http = require('http');
 const socketIO = require('socket.io');
 
 class SocketManager {
-    initialize() {
+    initialize(expressManager) {
         this._sockets = [];
 
-        const expressApp = express();
-        const httpServer = http.Server(expressApp);
+        const httpServer = http.Server(expressManager.app);
         this._server = socketIO(httpServer);
         
         const port = process.env.PORT || 1337;
@@ -15,14 +13,14 @@ class SocketManager {
             console.log('Listening on port ' + port);
         });
 
-        this._server.on('connection', socket => {
-            console.log("SocketManager: Event: 'connect': socket.id=" + socket.id);
-            this._sockets[socket.id] = socket;
-        });
+        // this._server.on('connection', socket => {
+        //     console.log("SocketManager: Event: 'connect': socket.id=" + socket.id);
+        //     this._sockets[socket.id] = socket;
+        // });
 
-        setInterval(() => {
-            http.get('http://blockparty-server.herokuapp.com');
-        }, 300000);
+        // setInterval(() => {
+        //     http.get('http://blockparty-server.herokuapp.com');
+        // }, 300000);
     }
 
     get server() {
