@@ -14,7 +14,7 @@ Configuration = {
       },
       scoreboard: {
         id: "scoreboard",
-        duration: 15000
+        duration: 10000
       }
     },
     modes: {

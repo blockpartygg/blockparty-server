@@ -12,8 +12,10 @@ class ScoreboardManager {
 
     addScore(id, score) {
         const length = this.scoreboard.items.push({ id: id, score: score });
-        console.log("Added score:");
+        console.log("Added scoreboard score:");
         console.log(this.scoreboard.items[length - 1]);
+        this.scoreboard.items.sort((a, b) => a.score - b.score);
+        this.scoreboard.items.reverse();
     }
 
     addBotScores() {

@@ -1,7 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const Config = require('./Configuration');
+const Config = require('./MultiRoundConfiguration');
 
 class WebAppManager {
     initialize() {
@@ -11,7 +11,7 @@ class WebAppManager {
         this.app.use(bodyParser.json());
     }
 
-    setupRoutes(gameManager, scoreboardManager) {
+    setupRoutes(gameManager, scoreboardManager, leaderboardManager) {
         this.app.get('/config', function(request, response) {
             response.send(Config);
         });
@@ -20,13 +20,17 @@ class WebAppManager {
             response.send(gameManager.game);
         });
 
+        this.app.post('/score', function(request, response) {
+            scoreboardManager.addScore(request.body.id, parseInt(request.body.score));
+            response.json({ message: "Score created" });
+        });
+
         this.app.get('/scoreboard', function(request, response) {
             response.send(scoreboardManager.scoreboard);
         });
 
-        this.app.post('/score', function(request, response) {
-            scoreboardManager.addScore(request.body.id, parseInt(request.body.score));
-            response.json({ message: "Score created" });
+        this.app.get('/leaderboard', function(request, response) {
+            response.send(leaderboardManager.leaderboard);
         });
 
         this.app.get('/ping', function(request, response) {
