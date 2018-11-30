@@ -2,7 +2,7 @@ const http = require('http');
 const socketIO = require('socket.io');
 
 class SocketManager {
-    initialize(expressManager) {
+    initialize(expressManager, chatManager) {
         this._sockets = [];
 
         const httpServer = http.Server(expressManager.app);
@@ -13,14 +13,18 @@ class SocketManager {
             console.log('Listening on port ' + port);
         });
 
-        // this._server.on('connection', socket => {
-        //     console.log("SocketManager: Event: 'connect': socket.id=" + socket.id);
-        //     this._sockets[socket.id] = socket;
-        // });
-
         setInterval(() => {
             http.get('http://blockparty-server.herokuapp.com/ping');
         }, 300000);
+    }
+
+    setupEventHandlers(chatManager) {
+        this._server.on('connection', socket => {
+            console.log("SocketManager: Event: 'connect': socket.id=" + socket.id);
+            this._sockets[socket.id] = socket;
+
+            socket.on('chat', (playerName, message) => { chatManager.addMessage(playerName, message); });
+        });
     }
 
     get server() {
