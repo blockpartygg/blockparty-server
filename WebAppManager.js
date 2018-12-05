@@ -11,7 +11,7 @@ class WebAppManager {
         this.app.use(bodyParser.json());
     }
 
-    setupRoutes(gameManager, scoreboardManager, leaderboardManager) {
+    setupRoutes(gameManager, scoreboardManager, leaderboardManager, dailyLeaderboardManager) {
         this.app.get('/config', function(request, response) {
             response.send(Config);
         });
@@ -21,7 +21,7 @@ class WebAppManager {
         });
 
         this.app.post('/score', function(request, response) {
-            scoreboardManager.addScore(request.body.id, parseInt(request.body.score));
+            scoreboardManager.addScore(gameManager.game.mode, request.body.id, parseInt(request.body.score));
             response.json({ message: "Score created" });
         });
 
@@ -31,6 +31,10 @@ class WebAppManager {
 
         this.app.get('/leaderboard', function(request, response) {
             response.send(leaderboardManager.leaderboard);
+        });
+
+        this.app.get('/dailyleaderboard', function(request, response) {
+            response.send(dailyLeaderboardManager.leaderboard);
         });
 
         this.app.get('/ping', function(request, response) {

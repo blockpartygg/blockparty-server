@@ -1,8 +1,9 @@
 class ScoreboardManager {
-    constructor() {
+    constructor(dailyLeaderboardManager) {
         this.scoreboard = {
             items: []
         };
+        this.dailyLeaderboardManager = dailyLeaderboardManager;
     }
 
     clear() {
@@ -10,8 +11,12 @@ class ScoreboardManager {
         // this.addBotScores();
     }
 
-    addScore(id, score) {
+    addScore(mode, id, score) {
         const length = this.scoreboard.items.push({ id: id, score: score });
+
+        // Submit score to the daily leaderboard
+        this.dailyLeaderboardManager.submitScore(mode, id, score);
+        
         console.log("Added scoreboard score:");
         console.log(this.scoreboard.items[length - 1]);
         this.scoreboard.items.sort((a, b) => a.score - b.score);
@@ -21,7 +26,7 @@ class ScoreboardManager {
     addBotScores() {
         this.addScore("Brodsky", Math.floor(Math.random() * 10000));
         this.addScore("Kennychuck", Math.floor(Math.random() * 10000));
-        this.addScore("RonSolo", Math.floor(Math.random() * 10000));
+        this.addScore("PrincessLeigha", Math.floor(Math.random() * 10000));
         this.addScore("Cginntonic", Math.floor(Math.random() * 10000));
         this.addScore("UnicornDisaster", Math.floor(Math.random() * 10000));
         this.addScore("CMoneyTruDat", Math.floor(Math.random() * 10000));

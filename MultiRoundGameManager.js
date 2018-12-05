@@ -57,9 +57,6 @@ class MultiRoundGameManager {
   setPostMinigameState() {
     this.game.state = Config.states.postMinigame.id;
     this.game.endTime = new Date(Date.now() + Config.states.postMinigame.duration);
-    // this.scoreboardManager.addScore("RonSolo", Math.floor(Math.random() * 10));
-    // this.scoreboardManager.addScore("CMoneyTruDat", Math.floor(Math.random() * 10));
-    // this.scoreboardManager.addScore("Doc4bz", Math.floor(Math.random() * 10));
     this.logState();
     setTimeout(() => { this.setScoreboardState(); }, Config.states.postMinigame.duration);
   }
