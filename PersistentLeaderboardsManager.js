@@ -1,6 +1,6 @@
 const Config = require('./MultiRoundConfiguration');
 
-class DailyLeaderboardManager {
+class PersistentLeaderboardsManager {
     constructor() {
         this.leaderboard = {
             timeAttackItems: [],
@@ -14,13 +14,13 @@ class DailyLeaderboardManager {
         if(index !== -1) {
             if(score > items[index].score) {
                 items[index].score = score;
-                console.log('Updated daily leaderboard score:');
+                console.log('Updated persistent leaderboard score:');
                 console.log(items[index]);
             }
         }
         else {
             const length = items.push({ id: id, score: score});
-            console.log('Added new daily leaderboard score:');
+            console.log('Added new persistent leaderboard score:');
             console.log(items[length - 1]);
         }
 
@@ -30,4 +30,4 @@ class DailyLeaderboardManager {
     }
 }
 
-module.exports = DailyLeaderboardManager;
+module.exports = PersistentLeaderboardsManager;

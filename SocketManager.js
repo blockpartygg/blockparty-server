@@ -24,6 +24,10 @@ class SocketManager {
             this._sockets[socket.id] = socket;
 
             socket.on('chat', (playerName, message) => { chatManager.addMessage(playerName, message); });
+
+            socket.on('disconnect', () => {
+                console.log("SocketManager: Event: 'disconnect': socket.id=" + socket.id);
+            });
         });
     }
 

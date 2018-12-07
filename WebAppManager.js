@@ -11,7 +11,7 @@ class WebAppManager {
         this.app.use(bodyParser.json());
     }
 
-    setupRoutes(gameManager, scoreboardManager, leaderboardManager, dailyLeaderboardManager) {
+    setupRoutes(gameManager, scoreboardManager, leaderboardManager, persistentLeaderboardsManager) {
         this.app.get('/config', function(request, response) {
             response.send(Config);
         });
@@ -33,8 +33,8 @@ class WebAppManager {
             response.send(leaderboardManager.leaderboard);
         });
 
-        this.app.get('/dailyleaderboard', function(request, response) {
-            response.send(dailyLeaderboardManager.leaderboard);
+        this.app.get('/persistentleaderboards', function(request, response) {
+            response.send(persistentLeaderboardsManager.leaderboard);
         });
 
         this.app.get('/ping', function(request, response) {
