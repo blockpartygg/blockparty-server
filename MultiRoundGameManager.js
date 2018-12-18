@@ -1,7 +1,7 @@
 const Config = require('./MultiRoundConfiguration');
 
 class MultiRoundGameManager {
-  constructor(scoreboardManager, leaderboardManager) {
+  constructor(resultsManager, scoreboardManager) {
     // public game state
     this.game = {
       state: null,
@@ -9,8 +9,8 @@ class MultiRoundGameManager {
       round: 0,
       mode: null,
     };
+    this.resultsManager = resultsManager;
     this.scoreboardManager = scoreboardManager;
-    this.leaderboardManager = leaderboardManager;
     
     this.setPregameState();
   }
@@ -25,19 +25,19 @@ class MultiRoundGameManager {
     this.game.endTime = new Date(Date.now() + Config.states.pregame.duration);
     this.game.round = 0;
     this.game.mode = null;
-    this.leaderboardManager.clear();
-    this.logState();
-    setTimeout(() => { this.setPreRoundState(); }, Config.states.pregame.duration);
-  }
-
-  setPreRoundState() {
-    this.game.state = Config.states.preRound.id;
-    this.game.endTime = new Date(Date.now() + Config.states.preRound.duration);
-    this.game.round++;
-    this.game.mode = this.game.mode == null || this.game.mode == Config.modes.survival ? Config.modes.timeAttack : Config.modes.survival;  
     this.scoreboardManager.clear();
     this.logState();
-    setTimeout(() => { this.setPreMinigameState(); }, Config.states.preRound.duration);
+    setTimeout(() => { this.setRoundSetupState(); }, Config.states.pregame.duration);
+  }
+
+  setRoundSetupState() {
+    this.game.state = Config.states.roundSetup.id;
+    this.game.endTime = new Date(Date.now() + Config.states.roundSetup.duration);
+    this.game.round++;
+    this.game.mode = this.game.mode == null || this.game.mode == Config.modes.survival ? Config.modes.timeAttack : Config.modes.survival;  
+    this.resultsManager.clear();
+    this.logState();
+    setTimeout(() => { this.setPreMinigameState(); }, Config.states.roundSetup.duration);
   }
 
   setPreMinigameState() {
@@ -58,27 +58,27 @@ class MultiRoundGameManager {
     this.game.state = Config.states.postMinigame.id;
     this.game.endTime = new Date(Date.now() + Config.states.postMinigame.duration);
     this.logState();
-    setTimeout(() => { this.setScoreboardState(); }, Config.states.postMinigame.duration);
+    setTimeout(() => { this.setRoundResultsState(); }, Config.states.postMinigame.duration);
+  }
+
+  setRoundResultsState() {
+    this.game.state = Config.states.roundResults.id;
+    this.game.endTime = new Date(Date.now() + Config.states.roundResults.duration);
+    this.scoreboardManager.rewardPoints(this.resultsManager);
+    this.logState();
+    if(this.game.round < Config.roundCount) {
+        setTimeout(() => { this.setScoreboardState(); }, Config.states.roundResults.duration);
+    }
+    else {
+        setTimeout(() => { this.setPostgameState(); }, Config.states.roundResults.duration);
+    }
   }
 
   setScoreboardState() {
     this.game.state = Config.states.scoreboard.id;
     this.game.endTime = new Date(Date.now() + Config.states.scoreboard.duration);
-    this.leaderboardManager.rewardPoints(this.scoreboardManager);
     this.logState();
-    if(this.game.round < Config.roundCount) {
-        setTimeout(() => { this.setLeaderboardState(); }, Config.states.scoreboard.duration);
-    }
-    else {
-        setTimeout(() => { this.setPostgameState(); }, Config.states.scoreboard.duration);
-    }
-  }
-
-  setLeaderboardState() {
-    this.game.state = Config.states.leaderboard.id;
-    this.game.endTime = new Date(Date.now() + Config.states.leaderboard.duration);
-    this.logState();
-    setTimeout(() => { this.setPreRoundState(); }, Config.states.leaderboard.duration);
+    setTimeout(() => { this.setRoundSetupState(); }, Config.states.scoreboard.duration);
   }
 
   setPostgameState() {

@@ -1,26 +1,26 @@
 const Config = require('./MultiRoundConfiguration');
 
-class PersistentLeaderboardsManager {
+class LeaderboardsManager {
     constructor() {
-        this.leaderboard = {
+        this.leaderboards = {
             timeAttackItems: [],
             survivalItems: []
         }
     }
 
-    submitScore(mode, id, score) {
-        const items = mode === Config.modes.timeAttack ? this.leaderboard.timeAttackItems : this.leaderboard.survivalItems;
+    submitResults(mode, id, score) {
+        const items = mode === Config.modes.timeAttack ? this.leaderboards.timeAttackItems : this.leaderboards.survivalItems;
         const index = items.findIndex(value => value.id === id);
         if(index !== -1) {
             if(score > items[index].score) {
                 items[index].score = score;
-                console.log('Updated persistent leaderboard score:');
+                console.log('Updated leaderboard item:');
                 console.log(items[index]);
             }
         }
         else {
             const length = items.push({ id: id, score: score});
-            console.log('Added new persistent leaderboard score:');
+            console.log('Added leaderboard item:');
             console.log(items[length - 1]);
         }
 
@@ -30,4 +30,4 @@ class PersistentLeaderboardsManager {
     }
 }
 
-module.exports = PersistentLeaderboardsManager;
+module.exports = LeaderboardsManager;

@@ -3,10 +3,12 @@ Configuration = {
       pregame: {
         id: "pregame",
         duration: 180000
+        // duration: 3000
       },
-      preRound: {
-        id: "preRound",
+      roundSetup: {
+        id: "roundSetup",
         duration: 10000
+        // duration: 3000
       },
       preMinigame: {
         id: "preMinigame",
@@ -15,22 +17,26 @@ Configuration = {
       inMinigame: {
         id: "inMinigame",
         duration: 120000,
+        // duration: 3000
       },
       postMinigame: {
         id: "postMinigame",
         duration: 3000
       },
+      roundResults: {
+        id: "roundResults",
+        duration: 10000
+        // duration: 3000
+      },
       scoreboard: {
         id: "scoreboard",
         duration: 10000
-      },
-      leaderboard: {
-        id: "leaderboard",
-        duration: 10000
+        // duration: 3000
       },
       postgame: {
         id: "postgame",
         duration: 10000
+        // duration: 3000
       }
     },
     modes: {

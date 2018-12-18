@@ -11,7 +11,7 @@ class WebAppManager {
         this.app.use(bodyParser.json());
     }
 
-    setupRoutes(gameManager, scoreboardManager, leaderboardManager, persistentLeaderboardsManager) {
+    setupRoutes(gameManager, resultsManager, scoreboardManager, leaderboardsManager) {
         this.app.get('/config', function(request, response) {
             response.send(Config);
         });
@@ -20,21 +20,21 @@ class WebAppManager {
             response.send(gameManager.game);
         });
 
-        this.app.post('/score', function(request, response) {
-            scoreboardManager.addScore(gameManager.game.mode, request.body.id, parseInt(request.body.score));
-            response.json({ message: "Score created" });
+        this.app.post('/results', function(request, response) {
+            resultsManager.addResults(gameManager.game.mode, request.body.id, parseInt(request.body.score));
+            response.json({ message: "Results created" });
+        });
+
+        this.app.get('/results', function(request, response) {
+            response.send(resultsManager.results);
         });
 
         this.app.get('/scoreboard', function(request, response) {
             response.send(scoreboardManager.scoreboard);
         });
 
-        this.app.get('/leaderboard', function(request, response) {
-            response.send(leaderboardManager.leaderboard);
-        });
-
-        this.app.get('/persistentleaderboards', function(request, response) {
-            response.send(persistentLeaderboardsManager.leaderboard);
+        this.app.get('/leaderboards', function(request, response) {
+            response.send(leaderboardsManager.leaderboards);
         });
 
         this.app.get('/ping', function(request, response) {

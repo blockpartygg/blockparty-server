@@ -1,19 +1,19 @@
 const socketManager = require('./SocketManager');
 const webAppManager = require('./WebAppManager');
 const GameManager = require('./MultiRoundGameManager');
+const ResultsManager = require('./ResultsManager');
 const ScoreboardManager = require('./ScoreboardManager');
-const LeaderboardManager = require('./LeaderboardManager');
-const PersistentLeaderboardsManager = require('./PersistentLeaderboardsManager');
+const LeaderboardsManager = require('./LeaderboardsManager');
 const ChatManager = require('./ChatManager');
 
 webAppManager.initialize();
 socketManager.initialize(webAppManager);
 
-let persistentLeaderboardsManager = new PersistentLeaderboardsManager();
-let scoreboardManager = new ScoreboardManager(persistentLeaderboardsManager);
-let leaderboardManager = new LeaderboardManager();
-let gameManager = new GameManager(scoreboardManager, leaderboardManager);
+let leaderboardsManager = new LeaderboardsManager();
+let resultsManager = new ResultsManager(leaderboardsManager);
+let scoreboardManager = new ScoreboardManager();
+let gameManager = new GameManager(resultsManager, scoreboardManager);
 let chatManager = new ChatManager(socketManager);
 
-webAppManager.setupRoutes(gameManager, scoreboardManager, leaderboardManager, persistentLeaderboardsManager);
+webAppManager.setupRoutes(gameManager, resultsManager, scoreboardManager, leaderboardsManager);
 socketManager.setupEventHandlers(chatManager);

@@ -1,75 +1,43 @@
 class ScoreboardManager {
-    constructor(dailyLeaderboardManager) {
-        this.scoreboard = {
-            items: []
-        };
-        this.dailyLeaderboardManager = dailyLeaderboardManager;
+  constructor() {
+    this.scoreboard = {
+      items: []
     }
+  }
 
-    clear() {
-        this.scoreboard.items = [];
-        // this.addBotScores();
+  clear() {
+    this.scoreboard.items = [];
+  }
+
+  rewardPoints(resultsManager) {
+    // Precondition: Assumes results are already sorted in descending order
+    let points = resultsManager.results.items.length;
+    for(let resultsIndex = 0; resultsIndex < resultsManager.results.items.length; resultsIndex++) {
+      const scoreboardIndex = this.scoreboard.items.findIndex(item => item.id === resultsManager.results.items[resultsIndex].id);
+      if(scoreboardIndex !== -1) {
+        this.setItem(this.scoreboard.items[scoreboardIndex].id, this.scoreboard.items[scoreboardIndex].score + points--);
+      }
+      else {
+        this.setItem(resultsManager.results.items[resultsIndex].id, points--);
+      }
     }
+    this.scoreboard.items.sort((a, b) => a.score - b.score);
+    this.scoreboard.items.reverse();
+  }
 
-    addScore(mode, id, score) {
+  setItem(id, score) {
+    const index = this.scoreboard.items.findIndex(value => value.id === id);
+    if(index !== -1) {
+        this.scoreboard.items[index].score = score;
+        console.log("Updated scoreboard item:");
+        console.log(this.scoreboard.items[index]);
+    }
+    else {
         const length = this.scoreboard.items.push({ id: id, score: score });
-
-        // Submit score to the daily leaderboard
-        this.dailyLeaderboardManager.submitScore(mode, id, score);
-        
-        console.log("Added scoreboard score:");
+        console.log("Added scoreboard item:");
         console.log(this.scoreboard.items[length - 1]);
-        this.scoreboard.items.sort((a, b) => a.score - b.score);
-        this.scoreboard.items.reverse();
     }
-
-    addBotScores() {
-        this.addScore("Brodsky", Math.floor(Math.random() * 10000));
-        this.addScore("Kennychuck", Math.floor(Math.random() * 10000));
-        this.addScore("PrincessLeigha", Math.floor(Math.random() * 10000));
-        this.addScore("Cginntonic", Math.floor(Math.random() * 10000));
-        this.addScore("UnicornDisaster", Math.floor(Math.random() * 10000));
-        this.addScore("CMoneyTruDat", Math.floor(Math.random() * 10000));
-        this.addScore("Doc4bz", Math.floor(Math.random() * 10000));
-        this.addScore("IMightBeMatt", Math.floor(Math.random() * 10000));
-        this.addScore("Gltovar", Math.floor(Math.random() * 10000));
-        this.addScore("Ryze", Math.floor(Math.random() * 10000));
-        this.addScore("Tryndamere", Math.floor(Math.random() * 10000));
-        this.addScore("Greekinese", Math.floor(Math.random() * 10000));
-        this.addScore("dGon", Math.floor(Math.random() * 10000));
-        this.addScore("MikeBauer", Math.floor(Math.random() * 10000));
-        this.addScore("MetalWren", Math.floor(Math.random() * 10000));
-        this.addScore("SolidSnake", Math.floor(Math.random() * 10000));
-        this.addScore("MamaG", Math.floor(Math.random() * 10000));
-        this.addScore("BoxedWine", Math.floor(Math.random() * 10000));
-        this.addScore("JamaicanMeCrazy", Math.floor(Math.random() * 10000));
-        this.addScore("TheOnlyTenISee", Math.floor(Math.random() * 10000));
-        this.addScore("YourFaceIsABlockParty", Math.floor(Math.random() * 10000));
-        this.addScore("LifeIsAParty", Math.floor(Math.random() * 10000));
-        this.addScore("ImRonBurgandy", Math.floor(Math.random() * 10000));
-        this.addScore("JaneDoh!", Math.floor(Math.random() * 10000));
-        this.addScore("LadyLisaOfKang", Math.floor(Math.random() * 10000));
-        this.addScore("Bearcat", Math.floor(Math.random() * 10000));
-        this.addScore("Nomez", Math.floor(Math.random() * 10000));
-        this.addScore("Soozalooze", Math.floor(Math.random() * 10000));
-        this.addScore("DeNice", Math.floor(Math.random() * 10000));
-        this.addScore("Ahleeseah", Math.floor(Math.random() * 10000));
-        this.addScore("JMGoins", Math.floor(Math.random() * 10000));
-        this.addScore("TheExecutive", Math.floor(Math.random() * 10000));
-        this.addScore("BlackFriday", Math.floor(Math.random() * 10000));
-        this.addScore("Artemis", Math.floor(Math.random() * 10000));
-        this.addScore("Parzival", Math.floor(Math.random() * 10000));
-        this.addScore("FightClubAlum", Math.floor(Math.random() * 10000));
-        this.addScore("LeeroyJenkins", Math.floor(Math.random() * 10000));
-        this.addScore("Anorak", Math.floor(Math.random() * 10000));
-        this.addScore("Aech", Math.floor(Math.random() * 10000));
-        this.addScore("Og", Math.floor(Math.random() * 10000));
-        this.addScore("Daito", Math.floor(Math.random() * 10000));
-        this.addScore("Shoto", Math.floor(Math.random() * 10000));
-        this.addScore("Crono", Math.floor(Math.random() * 10000));
-        this.addScore("Cloud", Math.floor(Math.random() * 10000));
-        this.addScore("Faker", Math.floor(Math.random() * 10000));
-    }
+  }
 }
 
 module.exports = ScoreboardManager;
